@@ -6,16 +6,13 @@ on:
       mode:
         description: "Build mode"
         required: false
-        default: "notes-only"   # choose when you click Run workflow
+        default: "notes-only"
         type: choice
-        options:
-          - notes-only
-          - crawl
+        options: [notes-only, crawl]
   schedule:
     - cron: "0 7 * * 1"        # every Monday at 07:00 UTC
   push:
-    paths:
-      - "scripts/build-knowledge.mjs"
+    paths: ["scripts/build-knowledge.mjs", "docs/notes.md"]
 
 permissions:
   contents: write
@@ -48,7 +45,66 @@ jobs:
             echo "Mode: crawl (PAGE_LIMIT=40)"
           fi
 
-      - name: Build knowledge.json
+      # Build directly from docs/notes.md when PAGE_LIMIT=0
+      - name: Build knowledge.json from notes.md (notes-only)
+        if: env.PAGE_LIMIT == '0'
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+
+          const mdPath = 'docs/notes.md';
+          if (!fs.existsSync(mdPath)) {
+            console.error('notes.md not found at', mdPath);
+            process.exit(1);
+          }
+
+          const md = fs.readFileSync(mdPath, 'utf8');
+          const lines = md.split(/\r?\n/);
+          const faqs = [];
+
+          for (let i = 0; i < lines.length; i++) {
+            const m = /^- Q:\s*(.+?)(?:\s*\((.*?)\))?\s*$/.exec(lines[i]);
+            if (!m) continue;
+
+            const q = m[1].trim();
+            const syn = (m[2] || '')
+              .split('/')
+              .map(s => s.trim().toLowerCase())
+              .filter(Boolean);
+
+            // Next non-empty line should be the A:
+            let j = i + 1;
+            while (j < lines.length && !lines[j].trim()) j++;
+            const aMatch = j < lines.length ? /^\s*A:\s*(.+)$/.exec(lines[j]) : null;
+            if (!aMatch) continue;
+
+            const a = aMatch[1].trim();
+            faqs.push({ tags: syn, q, a });
+            i = j; // advance past the A: line
+          }
+
+          if (!faqs.length) {
+            console.error('Parsed 0 FAQs from notes.md — check formatting (- Q: ... \\n  A: ...).');
+            process.exit(1);
+          }
+
+          const out = {
+            propertyName: "Destin Condo Getaways",
+            contact: { ownerEmail: "info@destincondogetaways.com" },
+            basics: {},
+            policies: {},
+            amenities: {},
+            faqs,
+            docs: []
+          };
+
+          fs.writeFileSync('docs/knowledge.json', JSON.stringify(out, null, 2));
+          console.log('Wrote docs/knowledge.json with', faqs.length, 'FAQs from notes.md');
+          NODE
+
+      # Crawl mode uses your existing script
+      - name: Build knowledge.json from sitemap (crawl)
+        if: env.PAGE_LIMIT != '0'
         run: node scripts/build-knowledge.mjs
 
       - name: Commit & push if changed
@@ -60,5 +116,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/knowledge.json
-          git commit -m "build: update knowledge from sitemap"
+          git commit -m "build: update knowledge from notes (or sitemap)"
           git push
