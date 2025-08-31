@@ -53,10 +53,60 @@
     if (wrap) wrap.style.marginTop = '8px';
   }
 
-  const SYN = { wifi:['wi-fi','wi fi','internet','network','ssid'], parking:['car','garage','lot'], checkin:['check-in','arrival'], checkout:['check-out','departure'], pets:['pet','dog','cat','pet-friendly','pet friendly'] };
+  // Expanded synonym map (covers your new FAQs)
+  const SYN = {
+    // Pricing & policy
+    rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
+    tax:       ['tax','taxes','fee','fees','percentage'],
+    insurance: ['insurance','travel','protection','play','policy','refund'],
+    deposit:   ['deposit','hold','security','damage'],
+    payment:   ['payment','pay','card','cards','credit','ach','paypal','zelle'],
+    modify:    ['modify','extend','change','edit','move'],
+    discount:  ['discount','weekly','monthly','promo','coupon','code'],
+    minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
+
+    // Beach & amenities
+    beach:        ['beach','shore','ocean','gulf','boardwalk','private','access'],
+    view:         ['view','oceanview','gulfview','beachview','seaview'],
+    beachchairs:  ['beach','chairs','chair','umbrella','lounger','gear'],
+    beachrent:    ['rent','rental','ldv','cabana'],
+
+    // Basics
+    wifi:      ['wifi','wi-fi','wi','fi','internet','network','speed','ssid'],
+    occupancy: ['occupancy','guests','people','capacity','max','maximum'],
+    parking:   ['parking','garage','lot','fee','complimentary','pass'],
+    blog:      ['recommendations','blog','restaurants','activities','things','todo','to-do'],
+
+    // Times & rules
+    checkin:   ['check-in','checkin','arrival'],
+    checkout:  ['check-out','checkout','departure'],
+    smoking:   ['smoking','smoke','vape','vaping','cigarette','designated'],
+    pools:     ['pool','pools','indoor','outdoor','heated','kiddie','jacuzzi','hot','tub','spa'],
+    pets:      ['pets','pet','dog','cat','service','animal','esa']
+  };
+
   const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
-  const expand = s => { const t=norm(s),set=new Set(t.split(' ').filter(Boolean)); for (const [k,a] of Object.entries(SYN)) if (set.has(k)||a.some(x=>set.has(x.replace(/\s+/g,'')))) { set.add(k); a.forEach(x=>set.add(x.replace(/\s+/g,''))); } return set; };
-  const score = (qt, it) => { const hay=norm([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' ')), toks=new Set(hay.split(' ').filter(Boolean)); let ov=0; for (const t of qt) if (toks.has(t)) ov++; const tags=new Set((it.tags||[]).map(norm)); let tag=0; for (const t of qt) if (tags.has(t)) tag++; const cov=ov/Math.max(3,qt.size); return cov*0.7+tag*0.3; };
+  const expand = s => {
+    const t = norm(s);
+    const set = new Set(t.split(' ').filter(Boolean));
+    for (const [k, a] of Object.entries(SYN)) {
+      if (set.has(k) || a.some(x => set.has(x.replace(/\s+/g,'')))) {
+        set.add(k);
+        a.forEach(x => set.add(x.replace(/\s+/g,'')));
+      }
+    }
+    return set;
+  };
+
+  const score = (qt, it) => {
+    const hay = norm([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
+    const toks = new Set(hay.split(' ').filter(Boolean));
+    let ov = 0; for (const t of qt) if (toks.has(t)) ov++;
+    const tags = new Set((it.tags||[]).map(norm));
+    let tag = 0; for (const t of qt) if (tags.has(t)) tag++;
+    const cov = ov / Math.max(3, qt.size);
+    return cov*0.7 + tag*0.3;
+  };
 
   const chat = document.getElementById('chat');
   const q = document.getElementById('q');
@@ -109,7 +159,7 @@
     q.focus();
   }
 
-  // NEW: Enter to send (Shift+Enter for newline)
+  // Enter to send (Shift+Enter for newline)
   q.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -117,7 +167,7 @@
     }
   });
 
-  // NEW: auto-resize the textarea
+  // Auto-resize the textarea
   q.style.height = '40px';
   q.addEventListener('input', () => {
     q.style.height = 'auto';
