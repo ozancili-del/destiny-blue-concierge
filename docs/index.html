@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Destiny Blue — Your AI Concierge</title>
+<style>
+  :root { --bg:#f8fafc; --card:#fff; --border:#e5e7eb; --text:#0f172a; --muted:#6b7280; --primary:#2563eb; }
+  body { margin:0; background:var(--bg); font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:var(--text); }
+  .wrap { max-width:840px; margin:24px auto; padding:0 16px; }
+  h1 { font-size:24px; margin:0 0 12px; }
+  .chat { background:var(--card); border:1px solid var(--border); border-radius:16px; height:440px; overflow:auto; padding:12px; }
+  .row { margin:8px 0; display:flex; }
+  .bubble { padding:9px 12px; border-radius:12px; max-width:75%; }
+  .user { justify-content:flex-end; }
+  .user .bubble { background:#0f172a; color:#fff; }
+  .bot .bubble { background:#f1f5f9; color:#111827; }
+  .input { display:flex; gap:8px; margin-top:10px; }
+  .input input { flex:1; padding:11px; border:1px solid var(--border); border-radius:12px; }
+  .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
+  .hint { font-size:12px; color:var(--muted); margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Destiny Blue — Your AI Concierge</h1>
+  <div id="chat" class="chat"></div>
+  <div class="input">
+    <input id="q" placeholder="Ask about Wi-Fi, parking, rules, amenities…" />
+    <button id="send">Send</button>
+  </div>
+  <div class="hint">Answers come from your property notes only. If I’m not sure, I’ll show the owner’s email.</div>
+</div>
+
+<script>
+  const SYN = { wifi:['wi-fi','wi fi','internet','network','ssid'], parking:['car','garage','lot'], checkin:['check-in','arrival'], checkout:['check-out','departure'], pets:['pet','dog','cat','pet-friendly','pet friendly'] };
+  const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+  const expand = s => { const t=norm(s),set=new Set(t.split(' ').filter(Boolean)); for (const [k,a] of Object.entries(SYN)) if (set.has(k)||a.some(x=>set.has(x.replace(/\s+/g,'')))) { set.add(k); a.forEach(x=>set.add(x.replace(/\s+/g,''))); } return set; };
+  const score = (qt, it) => { const hay=norm([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' ')), toks=new Set(hay.split(' ').filter(Boolean)); let ov=0; for (const t of qt) if (toks.has(t)) ov++; const tags=new Set((it.tags||[]).map(norm)); let tag=0; for (const t of qt) if (tags.has(t)) tag++; const cov=ov/Math.max(3,qt.size); return cov*0.7+tag*0.3; };
+
+  const chat = document.getElementById('chat');
+  const q = document.getElementById('q');
+  const btn = document.getElementById('send');
+  const msgs = []; let KB=null;
+
+  function push(role, content){
+    msgs.push({role,content});
+    const row=document.createElement('div'); row.className='row '+(role==='user'?'user':'bot');
+    const b=document.createElement('div'); b.className='bubble'; b.textContent=content;
+    row.appendChild(b); chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+  }
+  function choose(text){
+    if(!KB) return null; const qt=expand(text); const cand=[];
+    (KB.faqs||[]).forEach(f=>cand.push({type:'faq',item:f,score:score(qt,f)}));
+    (KB.docs||[]).forEach(d=>cand.push({type:'doc',item:d,score:score(qt,d)}));
+    const basics=KB.basics?Object.entries(KB.basics).map(([k,v])=>typeof v==='object'?`${k}: ${JSON.stringify(v)}`:`${k}: ${v}`).join(' | '):'';
+    const policies=KB.policies?Object.entries(KB.policies).map(([k,v])=>`${k}: ${v}`).join(' | '):'';
+    const amenities=KB.amenities?Object.values(KB.amenities).flat().join(', '):'';
+    [{title:'Basics',content:basics},{title:'Policies',content:policies},{title:'Amenities',content:amenities}]
+      .forEach(x=>cand.push({type:'doc',item:x,score:score(qt,x)}));
+    cand.sort((a,b)=>b.score-a.score); const best=cand[0];
+    if(!best||best.score<0.25) return null;
+    if(best.type==='faq') return best.item.a;
+    const t=(best.item.title?best.item.title+': ':'')+best.item.content;
+    return t.length>800?t.slice(0,780)+'…':t;
+  }
+  async function main(){ push('assistant',"Hi! I’m Destiny Blue. How can I help with your stay?"); try{ const r=await fetch('knowledge.json',{cache:'no-store'}); KB=await r.json(); }catch(e){ push('assistant','Could not load knowledge.json'); } }
+  main();
+  function send(){ const text=q.value.trim(); if(!text) return; push('user',text); q.value=''; const ans=choose(text); const email=(KB&&KB.contact&&KB.contact.ownerEmail)||'info@example.com'; push('assistant', ans || `I’m not fully sure from my notes. Please email the owner at ${email} and we’ll help right away.`); }
+  btn.onclick=send; q.onkeydown=e=>e.key==='Enter'&&send();
+</script>
+</body>
+</html>
