@@ -16,21 +16,19 @@
   .user .bubble { background:#0f172a; color:#fff; }
   .bot .bubble { background:#f1f5f9; color:#111827; }
   .input { display:flex; gap:8px; margin-top:10px; }
-  /* textarea styling (replaces input) */
   .input textarea { flex:1; padding:11px; border:1px solid var(--border); border-radius:12px; resize:none; font:inherit; line-height:1.3; }
   .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
   .hint { font-size:12px; color:var(--muted); margin-top:8px; }
 
-  /* NEW: quick-question chips */
+  /* chips */
   .chips { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 6px; }
   .chips button { padding:8px 12px; border:1px solid var(--border); background:#fff; border-radius:999px; font-size:14px; cursor:pointer; }
   .chips button:hover { border-color: var(--primary); }
 
-  /* make links look like links inside bubbles */
+  /* links in bubbles */
   .bubble a { color: var(--primary); text-decoration: underline; word-break: break-word; }
-  .bubble a:hover { text-decoration: underline; opacity: .9; }
+  .bubble a:hover { text-decoration: underline; opacity:.9; }
 
-  /* Taller chat on phones */
   @media (max-width: 640px) { .chat { height: 65vh; } }
 </style>
 </head>
@@ -39,7 +37,6 @@
   <h1>Destiny Blue — Your AI Concierge</h1>
   <div id="chat" class="chat"></div>
 
-  <!-- NEW: quick-question chips -->
   <div class="chips">
     <button class="chip" data-q="rates">Rates</button>
     <button class="chip" data-q="tax">Taxes</button>
@@ -48,11 +45,10 @@
     <button class="chip" data-q="beach chairs">Beach Chairs</button>
     <button class="chip" data-q="pools">Pools</button>
     <button class="chip" data-q="wifi">Wi-Fi</button>
-<button class="chip" data-q="parking">Parking</button>
+    <button class="chip" data-q="parking">Parking</button>
   </div>
 
   <div class="input">
-    <!-- input -> textarea -->
     <textarea id="q" rows="1" placeholder="Ask about Wi-Fi, parking, rules, amenities…" autofocus inputmode="text"></textarea>
     <button id="send">Send</button>
   </div>
@@ -60,11 +56,11 @@
 </div>
 
 <script>
-  // Tuning constants
-  const MATCH_THRESHOLD = 0.18;
+  // Slightly higher to avoid weak matches
+  const MATCH_THRESHOLD = 0.20;
   const NO_MATCH_MESSAGE = "I couldn’t find that in my notes — please use https://www.destincondogetaways.com/book to send an inquiry.";
 
-  // EMBED MODE: hide header + hint when ?embed=1
+  // EMBED MODE
   const params = new URLSearchParams(location.search);
   if (params.get('embed') === '1') {
     const wrap = document.querySelector('.wrap');
@@ -75,9 +71,8 @@
     if (wrap) wrap.style.marginTop = '8px';
   }
 
-  // Expanded synonym map (covers your new FAQs)
+  // Synonyms (REMOVED "lot" from parking)
   const SYN = {
-    // Pricing & policy
     rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
     tax:       ['tax','taxes','fee','fees','percentage'],
     insurance: ['insurance','travel','protection','play','policy','refund'],
@@ -87,19 +82,16 @@
     discount:  ['discount','weekly','monthly','promo','coupon','code'],
     minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
 
-    // Beach & amenities
     beach:        ['beach','shore','ocean','gulf','boardwalk','private','access'],
     view:         ['view','oceanview','gulfview','beachview','seaview'],
     beachchairs:  ['beach','chairs','chair','umbrella','lounger','gear'],
     beachrent:    ['rent','rental','ldv','cabana'],
 
-    // Basics
     wifi:      ['wifi','wi-fi','wi','fi','internet','network','speed','ssid'],
     occupancy: ['occupancy','guests','people','capacity','max','maximum'],
-    parking:   ['parking','garage','lot','fee','complimentary','pass'],
+    parking:   ['parking','garage','fee','complimentary','pass'], // <- no "lot"
     blog:      ['recommendations','blog','restaurants','activities','things','todo','to-do'],
 
-    // Times & rules
     checkin:   ['check-in','checkin','arrival'],
     checkout:  ['check-out','checkout','departure'],
     smoking:   ['smoking','smoke','vape','vaping','cigarette','designated'],
@@ -107,18 +99,21 @@
     pets:      ['pets','pet','dog','cat','service','animal','esa']
   };
 
-  const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+  const STOP = new Set([
+    'a','an','the','of','in','on','to','for','and','or','is','are','am',
+    'it','this','that','do','does','did','my','your','our','we','you','i',
+    'lot','lots' // <- ignore generic "lot"
+  ]);
 
-  // Helpers to make URLs/emails clickable safely
-  function escapeHTML(s){
-    return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-  }
+  const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+  const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w));
+
+  // Safe link rendering
+  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
   function linkify(text){
     let t = escapeHTML(text).replace(/\n/g,'<br>');
-    // emails
     t = t.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '<a href="mailto:$&">$&</a>');
-    // urls (http(s) or www.)
-    t = t.replace(/((https?:\/\/|www\.)[^\s<)]+)/gi, (m) => {
+    t = t.replace(/((https?:\/\/|www\.)[^\s<)]+)/gi, m => {
       const url = /^www\./i.test(m) ? 'https://' + m : m;
       return `<a href="${url}" target="_blank" rel="noopener">${m}</a>`;
     });
@@ -126,8 +121,7 @@
   }
 
   const expand = s => {
-    const t = norm(s);
-    const set = new Set(t.split(' ').filter(Boolean));
+    const set = new Set(words(s));
     for (const [k, a] of Object.entries(SYN)) {
       if (set.has(k) || a.some(x => set.has(x.replace(/\s+/g,'')))) {
         set.add(k);
@@ -138,18 +132,17 @@
   };
 
   const score = (qt, it) => {
-    const hay = norm([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
-    const toks = new Set(hay.split(' ').filter(Boolean));
+    const hay = words([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
+    const toks = new Set(hay);
     let ov = 0; for (const t of qt) if (toks.has(t)) ov++;
-    const tags = new Set((it.tags||[]).map(norm));
-    let tag = 0; for (const t of qt) if (tags.has(t)) tag++;
+    const tagSet = new Set((it.tags||[]).map(norm).filter(w => !STOP.has(w)));
+    let tag = 0; for (const t of qt) if (tagSet.has(t)) tag++;
     const cov = ov / Math.max(3, qt.size);
     return cov*0.7 + tag*0.3;
   };
 
   const chat = document.getElementById('chat');
   const q = document.getElementById('q');
-  const btn = document.getElementById('send');
   const msgs = []; let KB=null;
 
   function push(role, content){
@@ -158,21 +151,24 @@
     row.className = 'row ' + (role==='user' ? 'user' : 'bot');
     const b = document.createElement('div');
     b.className = 'bubble';
-    b.innerHTML = linkify(content);  // linkify + safe HTML
+    b.innerHTML = linkify(String(content||''));  // clickable links
     row.appendChild(b);
     chat.appendChild(row);
     chat.scrollTop = chat.scrollHeight;
   }
 
   function choose(text){
-    if(!KB) return null; const qt=expand(text); const cand=[];
+    if(!KB) return null;
+    const qt = expand(text); const cand=[];
     (KB.faqs||[]).forEach(f=>cand.push({type:'faq',item:f,score:score(qt,f)}));
     (KB.docs||[]).forEach(d=>cand.push({type:'doc',item:d,score:score(qt,d)}));
+
     const basics=KB.basics?Object.entries(KB.basics).map(([k,v])=>typeof v==='object'?`${k}: ${JSON.stringify(v)}`:`${k}: ${v}`).join(' | '):'';
     const policies=KB.policies?Object.entries(KB.policies).map(([k,v])=>`${k}: ${v}`).join(' | '):'';
     const amenities=KB.amenities?Object.values(KB.amenities).flat().join(', '):'';
     [{title:'Basics',content:basics},{title:'Policies',content:policies},{title:'Amenities',content:amenities}]
       .forEach(x=>cand.push({type:'doc',item:x,score:score(qt,x)}));
+
     cand.sort((a,b)=>b.score-a.score);
     const best=cand[0];
     if(!best || best.score < MATCH_THRESHOLD) return null;
@@ -184,11 +180,8 @@
   async function main(){
     push('assistant',"Hi! I’m Destiny Blue. How can I help with your stay?");
     try{
-      const r=await fetch('knowledge.json',{cache:'no-store'});
-      KB=await r.json();
-    }catch(e){
-      push('assistant','Could not load knowledge.json');
-    }
+      const r=await fetch('knowledge.json',{cache:'no-store'}); KB=await r.json();
+    }catch(e){ push('assistant','Could not load knowledge.json'); }
   }
   main();
 
@@ -199,34 +192,20 @@
     const email=(KB&&KB.contact&&KB.contact.ownerEmail)||null;
     const fallback = email ? `${NO_MATCH_MESSAGE} Email: ${email}` : NO_MATCH_MESSAGE;
     push('assistant', ans || fallback);
-    q.style.height = '40px'; // reset after send
+    q.style.height = '40px';
     q.focus();
   }
 
-  // Enter to send (Shift+Enter for newline)
-  q.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
-  });
-
-  // Auto-resize the textarea
+  q.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
   q.style.height = '40px';
-  q.addEventListener('input', () => {
-    q.style.height = 'auto';
-    q.style.height = Math.min(120, q.scrollHeight) + 'px';
-  });
+  q.addEventListener('input', () => { q.style.height='auto'; q.style.height=Math.min(120,q.scrollHeight)+'px'; });
 
-  // NEW: chip click → fill + send
+  // chips: click -> fill -> send
   document.querySelectorAll('.chip').forEach(btnEl => {
-    btnEl.addEventListener('click', () => {
-      q.value = btnEl.dataset.q || btnEl.textContent.trim();
-      send();
-    });
+    btnEl.addEventListener('click', () => { q.value = btnEl.dataset.q || btnEl.textContent.trim(); send(); });
   });
 
-  btn.onclick = send;
+  document.getElementById('send').onclick = send;
 </script>
 </body>
 </html>
