@@ -1,49 +1,44 @@
 {
   "propertyName": "Destin Condo Getaways",
-  "contact": { "ownerEmail": "info@destincondogetaways.com" },
+  "contact": {
+    "ownerEmail": "info@destincondogetaways.com"
+  },
   "basics": {},
   "policies": {},
   "amenities": {},
   "faqs": [
     {
-      "tags": ["rates","price","pricing","cost","nightly","seasonal"],
-      "q": "Nightly rates",
-      "a": "Rates vary by season. For live pricing & availability, visit https://www.destincondogetaways.com/book. You can also send an inquiry from the same page."
+      "tags": [
+        "wifi",
+        "internet",
+        "wi-fi"
+      ],
+      "q": "Do you have Wi-Fi?",
+      "a": "Yes—Wi-Fi available. Details in your arrival email."
     },
     {
-      "tags": ["tax","taxes","fees","percentage"],
-      "q": "What taxes apply and at what percentage?",
-      "a": "Total tax is 13%: Sales tax 7% (Florida 6% + Okaloosa 1%) + Tourist Development Tax 6% (Okaloosa)."
+      "tags": [
+        "parking",
+        "car"
+      ],
+      "q": "Is parking available?",
+      "a": "Parking details are in your arrival information."
     },
     {
-      "tags": ["insurance","travel insurance","play travel protection","protection","refund"],
-      "q": "Is travel insurance available or recommended? Through whom?",
-      "a": "Yes—travel insurance is offered at checkout via Play Travel Protection. We encourage all guests to consider it."
+      "tags": [
+        "check-in",
+        "arrival"
+      ],
+      "q": "What time is check-in?",
+      "a": "Check-in time is provided in your arrival email."
     },
     {
-      "tags": ["deposit","hold","security"],
-      "q": "Do you require a damage deposit or hold? How much and when is it released?",
-      "a": "Yes—$300 damage hold, released within 48 hours after checkout pending inspection."
-    },
-    {
-      "tags": ["payment","pay","credit card","ach","paypal","zelle"],
-      "q": "What payment methods do you accept?",
-      "a": "Major credit cards only (no ACH, PayPal, or Zelle). This is the most secure option for both parties."
-    },
-    {
-      "tags": ["change","extend","modify","edit"],
-      "q": "Can I modify or extend a reservation after booking?",
-      "a": "Usually yes—subject to calendar availability and any rate differences. Please reach out."
-    },
-    {
-      "tags": ["weekly","monthly","discount","promo","coupon"],
-      "q": "Do you offer discounts?",
-      "a": "Weekly and monthly discounts depend on season. See https://www.destincondogetaways.com/book or send an inquiry."
-    },
-    {
-      "tags": ["blackout","minimum nights","min stay","min nights"],
-      "q": "Are there any blackout dates or minimum night requirements?",
-      "a": "3-night minimum. Peak/holiday dates may have additional restrictions. If unsure, please send an inquiry from https://www.destincondogetaways.com/book."
+      "tags": [
+        "checkout",
+        "departure"
+      ],
+      "q": "What time is check-out?",
+      "a": "Check-out time is provided in your arrival email."
     }
   ],
   "docs": []
