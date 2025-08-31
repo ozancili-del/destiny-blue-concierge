@@ -71,7 +71,7 @@
     if (wrap) wrap.style.marginTop = '8px';
   }
 
-  // Synonyms (REMOVED "lot" from parking)
+  // Synonyms (no "lot" in parking)
   const SYN = {
     rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
     tax:       ['tax','taxes','fee','fees','percentage'],
@@ -89,7 +89,7 @@
 
     wifi:      ['wifi','wi-fi','wi','fi','internet','network','speed','ssid'],
     occupancy: ['occupancy','guests','people','capacity','max','maximum'],
-    parking:   ['parking','garage','fee','complimentary','pass'], // <- no "lot"
+    parking:   ['parking','garage','fee','complimentary','pass'], // no "lot"
     blog:      ['recommendations','blog','restaurants','activities','things','todo','to-do'],
 
     checkin:   ['check-in','checkin','arrival'],
@@ -99,13 +99,15 @@
     pets:      ['pets','pet','dog','cat','service','animal','esa']
   };
 
+  // Expanded stopwords: filler + location + months
   const STOP = new Set([
     'a','an','the','of','in','on','to','for','and','or','is','are','am',
     'it','this','that','do','does','did','my','your','our','we','you','i',
-    'lot','lots' // <- ignore generic "lot"
+    'lot','lots','destin','florida',
+    'january','february','march','april','may','june','july','august','september','october','november','december'
   ]);
 
-  const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+  const norm  = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
   const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w));
 
   // Safe link rendering
@@ -120,6 +122,7 @@
     return t;
   }
 
+  // Expand query tokens with synonyms
   const expand = s => {
     const set = new Set(words(s));
     for (const [k, a] of Object.entries(SYN)) {
@@ -131,19 +134,27 @@
     return set;
   };
 
-  const score = (qt, it) => {
-    const hay = words([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
-    const toks = new Set(hay);
-    let ov = 0; for (const t of qt) if (toks.has(t)) ov++;
+  // Detailed scoring (returns overlaps and tagHits too)
+  function scoreDetails(qt, it){
+    const hay    = words([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
+    const toks   = new Set(hay);
+
+    let overlaps = 0;
+    for (const t of qt) if (toks.has(t)) overlaps++;
+
     const tagSet = new Set((it.tags||[]).map(norm).filter(w => !STOP.has(w)));
-    let tag = 0; for (const t of qt) if (tagSet.has(t)) tag++;
-    const cov = ov / Math.max(3, qt.size);
-    return cov*0.7 + tag*0.3;
-  };
+    let tagHits  = 0;
+    for (const t of qt) if (tagSet.has(t)) tagHits++;
+
+    const cov   = overlaps / Math.max(3, qt.size);
+    const score = cov * 0.7 + tagHits * 0.3;
+    return { score, overlaps, tagHits };
+  }
 
   const chat = document.getElementById('chat');
-  const q = document.getElementById('q');
-  const msgs = []; let KB=null;
+  const q    = document.getElementById('q');
+  const btn  = document.getElementById('send');
+  const msgs = []; let KB = null;
 
   function push(role, content){
     msgs.push({role,content});
@@ -159,37 +170,56 @@
 
   function choose(text){
     if(!KB) return null;
-    const qt = expand(text); const cand=[];
-    (KB.faqs||[]).forEach(f=>cand.push({type:'faq',item:f,score:score(qt,f)}));
-    (KB.docs||[]).forEach(d=>cand.push({type:'doc',item:d,score:score(qt,d)}));
+    const qt = expand(text);
+    const cand = [];
 
-    const basics=KB.basics?Object.entries(KB.basics).map(([k,v])=>typeof v==='object'?`${k}: ${JSON.stringify(v)}`:`${k}: ${v}`).join(' | '):'';
-    const policies=KB.policies?Object.entries(KB.policies).map(([k,v])=>`${k}: ${v}`).join(' | '):'';
-    const amenities=KB.amenities?Object.values(KB.amenities).flat().join(', '):'';
+    (KB.faqs||[]).forEach(f => {
+      const s = scoreDetails(qt, f);
+      cand.push({ type:'faq', item:f, ...s });
+    });
+    (KB.docs||[]).forEach(d => {
+      const s = scoreDetails(qt, d);
+      cand.push({ type:'doc', item:d, ...s });
+    });
+
+    // also consider summary sections
+    const basics   = KB.basics   ? Object.entries(KB.basics).map(([k,v]) => typeof v==='object'?`${k}: ${JSON.stringify(v)}`:`${k}: ${v}`).join(' | ') : '';
+    const policies = KB.policies ? Object.entries(KB.policies).map(([k,v]) => `${k}: ${v}`).join(' | ') : '';
+    const amenities= KB.amenities? Object.values(KB.amenities).flat().join(', ') : '';
     [{title:'Basics',content:basics},{title:'Policies',content:policies},{title:'Amenities',content:amenities}]
-      .forEach(x=>cand.push({type:'doc',item:x,score:score(qt,x)}));
+      .forEach(x => {
+        const s = scoreDetails(qt, x);
+        cand.push({ type:'doc', item:x, ...s });
+      });
 
     cand.sort((a,b)=>b.score-a.score);
-    const best=cand[0];
-    if(!best || best.score < MATCH_THRESHOLD) return null;
-    if(best.type==='faq') return best.item.a;
-    const t=(best.item.title?best.item.title+': ':'')+best.item.content;
-    return t.length>800?t.slice(0,780)+'…':t;
+    const best = cand[0];
+    if (!best) return null;
+
+    // Require threshold AND (≥2 overlaps OR a tag match)
+    if (best.score < MATCH_THRESHOLD || (best.overlaps < 2 && best.tagHits < 1)) return null;
+
+    if (best.type === 'faq') return best.item.a;
+    const t = (best.item.title ? best.item.title + ': ' : '') + best.item.content;
+    return t.length > 800 ? t.slice(0,780) + '…' : t;
   }
 
   async function main(){
     push('assistant',"Hi! I’m Destiny Blue. How can I help with your stay?");
     try{
-      const r=await fetch('knowledge.json',{cache:'no-store'}); KB=await r.json();
-    }catch(e){ push('assistant','Could not load knowledge.json'); }
+      const r = await fetch('knowledge.json',{cache:'no-store'}); 
+      KB = await r.json();
+    }catch(e){
+      push('assistant','Could not load knowledge.json');
+    }
   }
   main();
 
   function send(){
-    const text=q.value.trim(); if(!text) return;
-    push('user',text); q.value='';
-    const ans=choose(text);
-    const email=(KB&&KB.contact&&KB.contact.ownerEmail)||null;
+    const text = q.value.trim(); if(!text) return;
+    push('user', text); q.value='';
+    const ans   = choose(text);
+    const email = (KB && KB.contact && KB.contact.ownerEmail) || null;
     const fallback = email ? `${NO_MATCH_MESSAGE} Email: ${email}` : NO_MATCH_MESSAGE;
     push('assistant', ans || fallback);
     q.style.height = '40px';
@@ -205,7 +235,7 @@
     btnEl.addEventListener('click', () => { q.value = btnEl.dataset.q || btnEl.textContent.trim(); send(); });
   });
 
-  document.getElementById('send').onclick = send;
+  btn.onclick = send;
 </script>
 </body>
 </html>
