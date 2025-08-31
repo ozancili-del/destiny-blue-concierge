@@ -207,7 +207,7 @@
   async function main(){
     push('assistant',"Hi! I’m Destiny Blue. How can I help with your stay?");
     try{
-      const r = await fetch('knowledge.json',{cache:'no-store'}); 
+     const r = await fetch('knowledge.json?v=' + Date.now(), { cache: 'no-store' }); 
       KB = await r.json();
     }catch(e){
       push('assistant','Could not load knowledge.json');
