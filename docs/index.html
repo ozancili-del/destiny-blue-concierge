@@ -79,7 +79,7 @@
     modify:    ['modify','extend','change','edit','move','dates'],
     discount:  ['discount','weekly','monthly','promo','coupon','code'],
     minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
-    towels:    ['towel','towels','linen','linens'],   // <- beach removed
+    towels:    ['towel','towels','linen','linens'],   // beach intentionally removed
 
     beach:        ['beach','shore','ocean','gulf','boardwalk','private','access'],
     view:         ['view','oceanview','gulfview','beachview','seaview'],
@@ -119,7 +119,7 @@
   const norm  = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
   const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w)).map(stem);
 
-  // Safe link rendering (fixed '&#39;')
+  // Safe link rendering
   function escapeHTML(s){
     return (s||'').replace(/[&<>"']/g, m => (
       {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
@@ -186,7 +186,7 @@
     if(!KB) return null;
     const qt = expand(text);
 
-    // --- Fast path: if towels are mentioned, answer towels FAQ immediately
+    // Fast-path for towels
     if (qt.has('towel')) {
       const towelFaq = (KB.faqs || []).find(f =>
         (f.tags || []).some(t => /towel/i.test(t)) || /towel/i.test(f.q)
@@ -194,8 +194,11 @@
       if (towelFaq) return towelFaq.a;
     }
 
-    // De-bias: if user asks about towels, drop generic "beach"
-    if (qt.has('towel')) qt.delete('beach');
+    // General de-bias: if user mentions a specific beach item, drop generic "beach"
+    const SPECIFIC_BEACH_ITEMS = ['towel','chair','umbrella','lounger'];
+    if (SPECIFIC_BEACH_ITEMS.some(t => qt.has(t))) {
+      qt.delete('beach');
+    }
 
     const cand = [];
     (KB.faqs||[]).forEach(f => { const s = scoreDetails(qt, f); cand.push({ type:'faq', item:f, ...s }); });
