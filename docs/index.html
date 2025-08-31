@@ -107,8 +107,22 @@
     'january','february','march','april','may','june','july','august','september','october','november','december'
   ]);
 
+  // --- NEW: tiny stemmer so towel/towels, fees/fee, chairs/chair, etc. match
+  function stem(w){
+    w = w.toLowerCase();
+    if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3) + 'y';
+    if (w.endsWith('es')  && w.length > 4) return w.slice(0,-2);
+    if (w.endsWith('s')   && w.length > 3) return w.slice(0,-1);
+    return w;
+  }
+
   const norm  = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
-  const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w));
+
+  // UPDATED: apply stem() to tokens
+  const words = s => norm(s)
+    .split(' ')
+    .filter(w => w && !STOP.has(w))
+    .map(stem);
 
   // Safe link rendering
   function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -142,7 +156,11 @@
     let overlaps = 0;
     for (const t of qt) if (toks.has(t)) overlaps++;
 
-    const tagSet = new Set((it.tags||[]).map(norm).filter(w => !STOP.has(w)));
+    // UPDATED: stem tags too
+    const tagSet = new Set((it.tags || [])
+      .map(x => stem(norm(x)))
+      .filter(w => !STOP.has(w)));
+
     let tagHits  = 0;
     for (const t of qt) if (tagSet.has(t)) tagHits++;
 
@@ -207,7 +225,7 @@
   async function main(){
     push('assistant',"Hi! I’m Destiny Blue. How can I help with your stay?");
     try{
-     const r = await fetch('knowledge.json?v=' + Date.now(), { cache: 'no-store' }); 
+      const r = await fetch('knowledge.json?v=' + Date.now(), { cache: 'no-store' });
       KB = await r.json();
     }catch(e){
       push('assistant','Could not load knowledge.json');
