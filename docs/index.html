@@ -20,7 +20,7 @@
   .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
   .hint { font-size:12px; color:var(--muted); margin-top:8px; }
 
-  /* NEW: taller chat on phones */
+  /* Taller chat on phones */
   @media (max-width: 640px) { .chat { height: 65vh; } }
 </style>
 </head>
@@ -36,9 +36,20 @@
 </div>
 
 <script>
-  // NEW: tuning constants
+  // Tuning constants
   const MATCH_THRESHOLD = 0.18;
   const NO_MATCH_MESSAGE = "I couldn’t find that—please reach the owner via the inquiry link on the booking page.";
+
+  // EMBED MODE: hide header + hint when ?embed=1
+  const params = new URLSearchParams(location.search);
+  if (params.get('embed') === '1') {
+    const wrap = document.querySelector('.wrap');
+    const h1 = document.querySelector('.wrap h1');
+    const hint = document.querySelector('.hint');
+    if (h1) h1.style.display = 'none';
+    if (hint) hint.style.display = 'none';
+    if (wrap) wrap.style.marginTop = '8px';
+  }
 
   const SYN = { wifi:['wi-fi','wi fi','internet','network','ssid'], parking:['car','garage','lot'], checkin:['check-in','arrival'], checkout:['check-out','departure'], pets:['pet','dog','cat','pet-friendly','pet friendly'] };
   const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
@@ -68,7 +79,7 @@
       .forEach(x=>cand.push({type:'doc',item:x,score:score(qt,x)}));
     cand.sort((a,b)=>b.score-a.score);
     const best=cand[0];
-    if(!best || best.score < MATCH_THRESHOLD) return null;   // UPDATED: use constant
+    if(!best || best.score < MATCH_THRESHOLD) return null;
     if(best.type==='faq') return best.item.a;
     const t=(best.item.title?best.item.title+': ':'')+best.item.content;
     return t.length>800?t.slice(0,780)+'…':t;
