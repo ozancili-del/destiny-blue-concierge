@@ -82,15 +82,16 @@
   }
   main();
 
-  function send(){
-    const text=q.value.trim(); if(!text) return;
-    push('user',text); q.value='';
-    const ans=choose(text);
-    // Keep an optional email if present in knowledge.json, otherwise just use the clear fallback
-    const email=(KB&&KB.contact&&KB.contact.ownerEmail)||null;
-    const fallback = email ? `${NO_MATCH_MESSAGE} Email: ${email}` : NO_MATCH_MESSAGE;
-    push('assistant', ans || fallback);
-  }
+ function send(){
+  const text=q.value.trim(); if(!text) return;
+  push('user',text); q.value='';
+  const ans=choose(text);
+  const email=(KB&&KB.contact&&KB.contact.ownerEmail)||null;
+  const fallback = email ? `${NO_MATCH_MESSAGE} Email: ${email}` : NO_MATCH_MESSAGE;
+  push('assistant', ans || fallback);
+  q.focus();                // <-- add this line
+}
+
 
   btn.onclick=send;
   q.onkeydown=e=>e.key==='Enter'&&send();
