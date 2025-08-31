@@ -19,16 +19,11 @@
   .input textarea { flex:1; padding:11px; border:1px solid var(--border); border-radius:12px; resize:none; font:inherit; line-height:1.3; }
   .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
   .hint { font-size:12px; color:var(--muted); margin-top:8px; }
-
-  /* chips */
   .chips { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 6px; }
   .chips button { padding:8px 12px; border:1px solid var(--border); background:#fff; border-radius:999px; font-size:14px; cursor:pointer; }
   .chips button:hover { border-color: var(--primary); }
-
-  /* links in bubbles */
   .bubble a { color: var(--primary); text-decoration: underline; word-break: break-word; }
   .bubble a:hover { text-decoration: underline; opacity:.9; }
-
   @media (max-width: 640px) { .chat { height: 65vh; } }
 </style>
 </head>
@@ -60,7 +55,6 @@
   // Tuning
   const MATCH_THRESHOLD = 0.20;
   const NO_MATCH_MESSAGE = "I couldn’t find that in my notes — please use https://www.destincondogetaways.com/book to send an inquiry.";
-  // Prefer tag matches a bit more than before
   const WEIGHT_OVERLAP = 0.55;
   const WEIGHT_TAG     = 0.45;
 
@@ -75,7 +69,7 @@
     if (wrap) wrap.style.marginTop = '8px';
   }
 
-  // Synonyms (includes towels + Wi-Fi password; no "lot" under parking)
+  // Synonyms (NOTE: towels has NO beach tokens)
   const SYN = {
     rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
     tax:       ['tax','taxes','fee','fees','percentage'],
@@ -85,7 +79,7 @@
     modify:    ['modify','extend','change','edit','move','dates'],
     discount:  ['discount','weekly','monthly','promo','coupon','code'],
     minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
-    towels:    ['towel','towels','linen','linens','beach','beach towels'],
+    towels:    ['towel','towels','linen','linens'],   // <- beach removed
 
     beach:        ['beach','shore','ocean','gulf','boardwalk','private','access'],
     view:         ['view','oceanview','gulfview','beachview','seaview'],
@@ -94,7 +88,7 @@
 
     wifi:      ['wifi','wi-fi','wi','fi','internet','network','speed','ssid','password'],
     occupancy: ['occupancy','guests','people','capacity','max','maximum'],
-    parking:   ['parking','garage','fee','complimentary','pass'], // no "lot"
+    parking:   ['parking','garage','fee','complimentary','pass'],
     blog:      ['recommendations','blog','restaurants','activities','things','todo','to-do'],
 
     checkin:   ['check-in','checkin','arrival','early check-in'],
@@ -113,7 +107,7 @@
     'january','february','march','april','may','june','july','august','september','october','november','december'
   ]);
 
-  // Tiny stemmer (towels→towel, fees→fee, chairs→chair…)
+  // Tiny stemmer
   function stem(w){
     w = w.toLowerCase();
     if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3) + 'y';
@@ -125,8 +119,12 @@
   const norm  = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
   const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w)).map(stem);
 
-  // Safe link rendering
-  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39'}[m])); }
+  // Safe link rendering (fixed '&#39;')
+  function escapeHTML(s){
+    return (s||'').replace(/[&<>"']/g, m => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]
+    ));
+  }
   function linkify(text){
     let t = escapeHTML(text).replace(/\n/g,'<br>');
     t = t.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '<a href="mailto:$&">$&</a>');
@@ -157,7 +155,6 @@
     let overlaps = 0;
     for (const t of qt) if (toks.has(t)) overlaps++;
 
-    // tokenize tags into words and stem them so "beach towels" -> "beach","towel"
     const tagSet = new Set((it.tags || []).flatMap(x => words(x)));
 
     let tagHits  = 0;
@@ -189,21 +186,27 @@
     if(!KB) return null;
     const qt = expand(text);
 
-    // De-bias: if user asks about towels, drop generic "beach" so beach-access doesn't win
+    // --- Fast path: if towels are mentioned, answer towels FAQ immediately
+    if (qt.has('towel')) {
+      const towelFaq = (KB.faqs || []).find(f =>
+        (f.tags || []).some(t => /towel/i.test(t)) || /towel/i.test(f.q)
+      );
+      if (towelFaq) return towelFaq.a;
+    }
+
+    // De-bias: if user asks about towels, drop generic "beach"
     if (qt.has('towel')) qt.delete('beach');
 
     const cand = [];
     (KB.faqs||[]).forEach(f => { const s = scoreDetails(qt, f); cand.push({ type:'faq', item:f, ...s }); });
     (KB.docs||[]).forEach(d => { const s = scoreDetails(qt, d); cand.push({ type:'doc', item:d, ...s }); });
 
-    // also consider summary sections
     const basics    = KB.basics    ? Object.entries(KB.basics).map(([k,v]) => typeof v==='object'?`${k}: ${JSON.stringify(v)}`:`${k}: ${v}`).join(' | ') : '';
     const policies  = KB.policies  ? Object.entries(KB.policies).map(([k,v]) => `${k}: ${v}`).join(' | ') : '';
     const amenities = KB.amenities ? Object.values(KB.amenities).flat().join(', ') : '';
     [{title:'Basics',content:basics},{title:'Policies',content:policies},{title:'Amenities',content:amenities}]
       .forEach(x => { const s = scoreDetails(qt, x); cand.push({ type:'doc', item:x, ...s }); });
 
-    // Prefer higher score, then more tag hits, then overlaps
     cand.sort((a,b)=>{
       if (b.score   !== a.score)   return b.score   - a.score;
       if (b.tagHits !== a.tagHits) return b.tagHits - a.tagHits;
@@ -213,7 +216,6 @@
     const best = cand[0];
     if (!best) return null;
 
-    // Allow single-token queries if there is at least one tag match
     if (best.score < MATCH_THRESHOLD || (best.overlaps < 1 && best.tagHits < 1)) return null;
 
     if (best.type === 'faq') return best.item.a;
@@ -247,7 +249,6 @@
   q.style.height = '40px';
   q.addEventListener('input', () => { q.style.height='auto'; q.style.height=Math.min(120,q.scrollHeight)+'px'; });
 
-  // chips: click -> fill -> send
   document.querySelectorAll('.chip').forEach(btnEl => {
     btnEl.addEventListener('click', () => { q.value = btnEl.dataset.q || btnEl.textContent.trim(); send(); });
   });
