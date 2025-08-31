@@ -21,6 +21,10 @@
   .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
   .hint { font-size:12px; color:var(--muted); margin-top:8px; }
 
+  /* NEW: make links look like links inside bubbles */
+  .bubble a { color: var(--primary); text-decoration: underline; word-break: break-word; }
+  .bubble a:hover { text-decoration: underline; opacity: .9; }
+
   /* Taller chat on phones */
   @media (max-width: 640px) { .chat { height: 65vh; } }
 </style>
@@ -116,7 +120,7 @@
   function push(role, content){
     msgs.push({role,content});
     const row=document.createElement('div'); row.className='row '+(role==='user'?'user':'bot');
-    const b=document.createElement('div'); b.className='bubble'; b.textContent=content;
+    const b=document.createElement('div'); b.className='bubble'; b.textContent=content; /* Step 1 only: leaving textContent as-is */
     row.appendChild(b); chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
   }
 
