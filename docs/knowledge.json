@@ -1,0 +1,33 @@
+{
+  "propertyName": "Pelican Beach Resort Unit 1006",
+  "contact": { "ownerEmail": "info@destincondogetaways.com" },
+
+  "basics": {
+    "checkIn": "4:00 PM",
+    "checkOut": "11:00 AM",
+    "wifi": { "ssid": "", "password": "" },
+    "parking": "One on-site spot per unit; overflow street parking nearby.",
+    "pets": "Small, well-behaved pets with prior approval and a cleaning fee."
+  },
+
+  "policies": {
+    "houseRules": "No smoking. Quiet hours 10pm–8am.",
+    "cancellation": "Full policy text here."
+  },
+
+  "amenities": {
+    "popular": ["Beachfront", "Ocean view", "Washer/Dryer", "Smart TV", "AC"],
+    "internet": ["High-speed Wi-Fi"]
+  },
+
+  "faqs": [
+    { "tags": ["wifi","wi-fi","internet","password","network","ssid"], "q": "Do you have Wi-Fi?", "a": "Yes—fast Wi-Fi. The details are in your arrival email and posted in the unit." },
+    { "tags": ["parking","car","garage","lot"], "q": "Is parking available?", "a": "One on-site spot per unit; overflow street parking nearby." },
+    { "tags": ["check-in","arrival"], "q": "What time is check-in?", "a": "Check-in is 4:00 PM. Early check-in may be possible depending on availability." },
+    { "tags": ["checkout","departure"], "q": "What time is check-out?", "a": "Check-out is 11:00 AM. Late check-out may be possible depending on availability." }
+  ],
+
+  "docs": [
+    { "title": "Full Description", "content": "Paste longer description here (optional)." }
+  ]
+}
