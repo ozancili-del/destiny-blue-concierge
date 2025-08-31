@@ -18,14 +18,15 @@
         "seasonal"
       ],
       "q": "Nightly rates",
-      "a": "Rates vary by season. For live pricing & availability, please visit https://www.destincondogetaways.com/book. You can also send an inquiry from the same page."
+      "a": "Rates vary by season; for live pricing & availability please visit https://www.destincondogetaways.com/book and you can also send an inquiry from the same page."
     },
     {
       "tags": [
         "tax",
         "taxes",
         "fee",
-        "fees"
+        "fees",
+        "percentage"
       ],
       "q": "What taxes apply and at what percentage?",
       "a": "Total tax is 13%: Sales tax 7% (Florida 6% + Okaloosa County 1% discretionary surtax) + Tourist Development Tax 6% (Okaloosa County)."
@@ -35,10 +36,10 @@
         "insurance",
         "travel insurance",
         "protection",
-        "refund"
+        "play travel protection"
       ],
       "q": "Is travel insurance available or recommended? Through whom?",
-      "a": "Yes—travel insurance is offered at checkout through \"Play Travel Protection.\" We encourage all guests to consider it."
+      "a": "Yes—travel insurance is offered at checkout via Play Travel Protection and we encourage all guests to consider it."
     },
     {
       "tags": [
@@ -47,50 +48,194 @@
         "security"
       ],
       "q": "Do you require a damage deposit or hold? How much and when is it released?",
-      "a": "Yes—$300 hold, released within 48 hours after checkout pending inspection."
+      "a": "Yes—we place a $300 damage hold and release it within 48 hours after checkout pending inspection."
     },
     {
       "tags": [
         "payment",
         "pay",
         "credit card",
+        "cards",
         "ach",
         "paypal",
         "zelle"
       ],
       "q": "What payment methods do you accept?",
-      "a": "Major credit cards only (no ACH, PayPal, or Zelle). This is the most secure option for both parties."
+      "a": "We accept major credit cards only (no ACH, PayPal, or Zelle) as this is the most secure option for both parties."
     },
     {
       "tags": [
-        "change",
-        "extend",
         "modify",
+        "extend",
+        "change",
         "edit"
       ],
       "q": "Can I modify or extend a reservation after booking?",
-      "a": "Usually yes—subject to calendar availability and any rate differences. Please reach out and we’ll do our best to help."
+      "a": "Usually yes—subject to calendar availability and any rate differences; please reach out and we’ll do our best to help."
     },
     {
       "tags": [
+        "discount",
         "weekly",
         "monthly",
-        "discount",
         "promo",
-        "coupon"
+        "coupon",
+        "code"
       ],
       "q": "Do you offer discounts?",
-      "a": "Weekly and monthly discounts depend on the season. See https://www.destincondogetaways.com/book or send an inquiry."
+      "a": "We offer weekly and monthly discounts depending on the season; see https://www.destincondogetaways.com/book or send an inquiry."
     },
     {
       "tags": [
-        "blackout",
         "minimum nights",
         "min stay",
-        "min nights"
+        "blackout",
+        "holiday"
       ],
       "q": "Are there any blackout dates or minimum night requirements?",
-      "a": "3-night minimum. Peak/holiday dates may have additional restrictions. If unsure, please send an inquiry from https://www.destincondogetaways.com/book."
+      "a": "A 3-night minimum applies and peak or holiday dates may have additional restrictions; if unsure please send an inquiry from https://www.destincondogetaways.com/book."
+    },
+    {
+      "tags": [
+        "beach",
+        "shore",
+        "ocean",
+        "gulf",
+        "boardwalk",
+        "private beach"
+      ],
+      "q": "Access to beach?",
+      "a": "Our condos are on the beach side with direct access—no roads to cross."
+    },
+    {
+      "tags": [
+        "view",
+        "ocean view",
+        "gulf view",
+        "beach view",
+        "sea view"
+      ],
+      "q": "View from the condos?",
+      "a": "Our condos are by the beach and offer an unrestricted beach view."
+    },
+    {
+      "tags": [
+        "beach chairs",
+        "umbrella",
+        "loungers",
+        "beach gear"
+      ],
+      "q": "Do you provide beach chairs?",
+      "a": "Yes—2 beach chairs and 1 umbrella are provided complimentary; per HOA rules personal gear must be set behind the rental vendor’s front rows."
+    },
+    {
+      "tags": [
+        "rent chairs",
+        "chair rental",
+        "cabana",
+        "lounger rental"
+      ],
+      "q": "Can I rent beach chairs?",
+      "a": "Yes—reserve early in high season via https://ldvbeach.com/destin/pelican-beach-resort/beach-chairs-umbrellas/beach-set or call LDV (front row recommended)."
+    },
+    {
+      "tags": [
+        "wifi",
+        "internet",
+        "speed"
+      ],
+      "q": "Wi-Fi?",
+      "a": "Yes—complimentary high-speed Wi-Fi is provided in our units."
+    },
+    {
+      "tags": [
+        "occupancy",
+        "guests",
+        "people",
+        "capacity",
+        "max"
+      ],
+      "q": "How many people can stay?",
+      "a": "Maximum 6 guests per fire code; sleeping setup is 1 king bed, 2 bunk beds, and 1 sofa bed in the living room."
+    },
+    {
+      "tags": [
+        "parking",
+        "garage",
+        "lot",
+        "fee",
+        "complimentary"
+      ],
+      "q": "Parking",
+      "a": "Complimentary parking is available for our guests."
+    },
+    {
+      "tags": [
+        "recommendations",
+        "blog",
+        "restaurants",
+        "activities"
+      ],
+      "q": "Your recommendations for Destin",
+      "a": "We keep recommendations on our blog at https://www.destincondogetaways.com/blog and are happy to help with anything specific."
+    },
+    {
+      "tags": [
+        "check-in",
+        "check-out",
+        "arrival",
+        "departure",
+        "times"
+      ],
+      "q": "Check-in and check-out times",
+      "a": "Check-in is 4:00 pm and check-out is 10:00 am."
+    },
+    {
+      "tags": [
+        "early arrival",
+        "early check-in",
+        "arrive early"
+      ],
+      "q": "What if we arrive early?",
+      "a": "You’re welcome to enter the resort, register at the front desk for your parking pass and pool bracelets, and enjoy the amenities until your unit is ready."
+    },
+    {
+      "tags": [
+        "smoking",
+        "vape",
+        "vaping",
+        "cigarette",
+        "designated area"
+      ],
+      "q": "Smoking policy",
+      "a": "Smoking is strictly prohibited inside units except in designated outdoor areas."
+    },
+    {
+      "tags": [
+        "pool",
+        "pools",
+        "jacuzzi",
+        "hot tub",
+        "spa",
+        "indoor",
+        "outdoor",
+        "heated",
+        "kiddie"
+      ],
+      "q": "Pools, Jacuzzi, and hot tub",
+      "a": "Amenities include one indoor pool with outdoor access, two outdoor pools, a kiddie pool, and two hot tubs."
+    },
+    {
+      "tags": [
+        "pets",
+        "pet",
+        "dog",
+        "cat",
+        "service animals",
+        "esa"
+      ],
+      "q": "Are pets allowed?",
+      "a": "Please send an inquiry so we can confirm with the HOA for your dates and unit."
     }
   ],
   "docs": []
