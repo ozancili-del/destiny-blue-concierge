@@ -34,11 +34,12 @@ jobs:
         with:
           node-version: "20"
 
-      # Decide PAGE_LIMIT based on manual input (default to crawl for scheduled/push runs)
+      # Decide PAGE_LIMIT based on manual input
+      # Default to notes-only for scheduled/push runs
       - name: Set build mode
         run: |
           MODE="${{ github.event.inputs.mode }}"
-          if [ -z "$MODE" ]; then MODE="crawl"; fi
+          if [ -z "$MODE" ]; then MODE="notes-only"; fi
           if [ "$MODE" = "notes-only" ]; then
             echo "PAGE_LIMIT=0" >> $GITHUB_ENV
             echo "Mode: notes-only (PAGE_LIMIT=0)"
