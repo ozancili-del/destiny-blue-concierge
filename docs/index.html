@@ -73,7 +73,7 @@
   const SYN = {
     rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
     tax:       ['tax','taxes','fee','fees','percentage'],
-    insurance: ['insurance','travel','protection','play','policy','refund'],
+    insurance: ['insurance','travel','protection','plan','policy','refund'],
     deposit:   ['deposit','hold','security','damage','pre-authorization','incidentals'],
     payment:   ['payment','pay','card','cards','credit','ach','paypal','zelle','amex','discover'],
     modify:    ['modify','extend','change','edit','move','dates'],
@@ -96,7 +96,8 @@
     smoking:   ['smoking','smoke','vape','vaping','cigarette','designated'],
     pools:     ['pool','pools','indoor','outdoor','heated','kiddie','jacuzzi','hot','tub','spa'],
     pets:      ['pets','pet','dog','cat','service','animal','esa'],
-    elevator:  ['elevator','lift','accessible']
+    elevator:  ['elevator','lift','accessible'],
+    ev:        ['ev','charger','charging','tesla']
   };
 
   // Stopwords: filler + location + months
@@ -186,12 +187,27 @@
     if(!KB) return null;
     const qt = expand(text);
 
-    // Fast-path for towels
-    if (qt.has('towel')) {
-      const towelFaq = (KB.faqs || []).find(f =>
-        (f.tags || []).some(t => /towel/i.test(t)) || /towel/i.test(f.q)
-      );
-      if (towelFaq) return towelFaq.a;
+    // HARD_ROUTING_RULES — force exact FAQ when query mentions these items
+    const HARD = [
+      // beach chairs (or chairs)
+      [/\b(?:beach\s*)?chairs?\b/, f => /chair/i.test(f.q) || (f.tags||[]).some(t => /chair/i.test(t))],
+      // towels
+      [/\btowels?\b/,               f => /towel/i.test(f.q) || (f.tags||[]).some(t => /towel/i.test(t))],
+      // elevator / lift
+      [/\b(?:elevator|lift)\b/,     f => /elevator|lift/i.test(f.q)],
+      // EV charging
+      [/\b(?:ev|charger|charging|tesla)\b/, f => /ev|charg|tesla/i.test(f.q)],
+      // parking
+      [/\bparking\b/,               f => /parking/i.test(f.q)],
+      // wifi / password
+      [/\b(?:wi[- ]?fi|wifi|ssid|password)\b/, f => /wi[- ]?fi|wifi|ssid|password/i.test(f.q+f.a)]
+    ];
+    const qtxt = (text||'').toLowerCase();
+    for (const [re, pred] of HARD) {
+      if (re.test(qtxt)) {
+        const hit = (KB.faqs || []).find(pred);
+        if (hit) return hit.a;
+      }
     }
 
     // General de-bias: if user mentions a specific beach item, drop generic "beach"
