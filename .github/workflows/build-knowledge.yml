@@ -31,8 +31,7 @@ jobs:
         with:
           node-version: "20"
 
-      # Decide PAGE_LIMIT based on manual input
-      # Default to notes-only for scheduled/push runs
+      # Decide PAGE_LIMIT based on manual input (default notes-only for auto runs)
       - name: Set build mode
         run: |
           MODE="${{ github.event.inputs.mode }}"
@@ -44,6 +43,25 @@ jobs:
             echo "PAGE_LIMIT=40" >> $GITHUB_ENV
             echo "Mode: crawl (PAGE_LIMIT=40)"
           fi
+
+      # Normalize docs/notes.md so the parser is resilient to copy/paste artifacts
+      - name: Normalize docs/notes.md (BOM, NBSP, CRLF)
+        if: env.PAGE_LIMIT == '0'
+        run: |
+          python - <<'PY'
+          import pathlib
+          p = pathlib.Path('docs/notes.md')
+          if p.exists():
+              b = p.read_bytes()
+              # strip UTF-8 BOM
+              if b.startswith(b'\xef\xbb\xbf'):
+                  b = b[3:]
+              # NBSP -> normal space
+              b = b.replace(b'\xc2\xa0', b' ')
+              # CRLF/CR -> LF
+              b = b.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+              p.write_bytes(b)
+          PY
 
       # Build directly from docs/notes.md when PAGE_LIMIT=0
       - name: Build knowledge.json from notes.md (notes-only)
@@ -58,33 +76,53 @@ jobs:
             process.exit(1);
           }
 
-          const md = fs.readFileSync(mdPath, 'utf8');
-          const lines = md.split(/\r?\n/);
+          // Read + in-process normalize as a second safety net
+          let text = fs.readFileSync(mdPath, 'utf8');
+          if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);        // BOM
+          text = text.replace(/\u00A0/g, ' ');                             // NBSP
+          text = text.replace(/\r\n?/g, '\n');                             // CRLF/CR -> LF
+
+          const lines = text.split('\n');
+
+          // Accept optional list bullet before Q: (e.g., "- Q:" or "* Q:" or just "Q:")
+          const qRe = /^\s*(?:[-*]\s*)?Q:\s*(.+?)(?:\s*\((.*?)\))?\s*$/i;
+          const aRe = /^\s*A:\s*(.+)\s*$/i;
+
           const faqs = [];
 
           for (let i = 0; i < lines.length; i++) {
-            const m = /^- Q:\s*(.+?)(?:\s*\((.*?)\))?\s*$/.exec(lines[i]);
-            if (!m) continue;
+            const qMatch = qRe.exec(lines[i]);
+            if (!qMatch) continue;
 
-            const q = m[1].trim();
-            const syn = (m[2] || '')
-              .split('/')
-              .map(s => s.trim().toLowerCase())
-              .filter(Boolean);
+            const q = (qMatch[1] || '').trim();
+            const synRaw = (qMatch[2] || '').trim();
+            const tags = synRaw
+              ? synRaw.split('/').map(s => s.trim().toLowerCase()).filter(Boolean)
+              : [];
 
-            // Next non-empty line should be the A:
+            // Find the A: line (skip blank lines)
             let j = i + 1;
             while (j < lines.length && !lines[j].trim()) j++;
-            const aMatch = j < lines.length ? /^\s*A:\s*(.+)$/.exec(lines[j]) : null;
+            const aMatch = j < lines.length ? aRe.exec(lines[j]) : null;
             if (!aMatch) continue;
 
-            const a = aMatch[1].trim();
-            faqs.push({ tags: syn, q, a });
-            i = j; // advance past the A: line
+            // Collect multi-line answer until blank line or next Q:
+            let answer = (aMatch[1] || '').trim();
+            let k = j + 1;
+            while (k < lines.length) {
+              const L = lines[k];
+              if (!L.trim()) break;             // blank line ends the answer
+              if (qRe.test(L)) break;           // next question begins
+              answer += ' ' + L.trim();
+              k++;
+            }
+
+            faqs.push({ tags, q, a: answer });
+            i = k - 1; // advance to the line before the next scan start
           }
 
           if (!faqs.length) {
-            console.error('Parsed 0 FAQs from notes.md — check formatting (- Q: ... \\n  A: ...).');
+            console.error('Parsed 0 FAQs from notes.md — check formatting (Q: … then A: …).');
             process.exit(1);
           }
 
