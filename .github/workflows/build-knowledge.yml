@@ -128,7 +128,7 @@ jobs:
 
           const out = {
             propertyName: "Destin Condo Getaways",
-            contact: { ownerEmail: "info@destincondogetaways.com" },
+            contact: { ownerEmail: "ozan@destincondogetaways.com" },
             basics: {},
             policies: {},
             amenities: {},
