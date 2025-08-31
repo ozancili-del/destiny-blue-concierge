@@ -21,7 +21,7 @@
   .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
   .hint { font-size:12px; color:var(--muted); margin-top:8px; }
 
-  /* NEW: make links look like links inside bubbles */
+  /* make links look like links inside bubbles */
   .bubble a { color: var(--primary); text-decoration: underline; word-break: break-word; }
   .bubble a:hover { text-decoration: underline; opacity: .9; }
 
@@ -90,6 +90,23 @@
   };
 
   const norm = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+
+  // Helpers to make URLs/emails clickable safely
+  function escapeHTML(s){
+    return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function linkify(text){
+    let t = escapeHTML(text).replace(/\n/g,'<br>');
+    // emails
+    t = t.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '<a href="mailto:$&">$&</a>');
+    // urls (http(s) or www.)
+    t = t.replace(/((https?:\/\/|www\.)[^\s<)]+)/gi, (m) => {
+      const url = /^www\./i.test(m) ? 'https://' + m : m;
+      return `<a href="${url}" target="_blank" rel="noopener">${m}</a>`;
+    });
+    return t;
+  }
+
   const expand = s => {
     const t = norm(s);
     const set = new Set(t.split(' ').filter(Boolean));
@@ -119,9 +136,14 @@
 
   function push(role, content){
     msgs.push({role,content});
-    const row=document.createElement('div'); row.className='row '+(role==='user'?'user':'bot');
-    const b=document.createElement('div'); b.className='bubble'; b.textContent=content; /* Step 1 only: leaving textContent as-is */
-    row.appendChild(b); chat.appendChild(row); chat.scrollTop=chat.scrollHeight;
+    const row = document.createElement('div');
+    row.className = 'row ' + (role==='user' ? 'user' : 'bot');
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.innerHTML = linkify(content);  // linkify + safe HTML
+    row.appendChild(b);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
   }
 
   function choose(text){
