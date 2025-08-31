@@ -57,9 +57,12 @@
 </div>
 
 <script>
-  // Slightly higher to avoid weak matches
+  // Tuning
   const MATCH_THRESHOLD = 0.20;
   const NO_MATCH_MESSAGE = "I couldn’t find that in my notes — please use https://www.destincondogetaways.com/book to send an inquiry.";
+  // Prefer tag matches a bit more than before
+  const WEIGHT_OVERLAP = 0.55;
+  const WEIGHT_TAG     = 0.45;
 
   // EMBED MODE
   const params = new URLSearchParams(location.search);
@@ -123,7 +126,7 @@
   const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w)).map(stem);
 
   // Safe link rendering
-  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+  function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39'}[m])); }
   function linkify(text){
     let t = escapeHTML(text).replace(/\n/g,'<br>');
     t = t.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, '<a href="mailto:$&">$&</a>');
@@ -146,7 +149,7 @@
     return set;
   };
 
-  // Scoring with tag tokenization
+  // Scoring with tag tokenization & weights
   function scoreDetails(qt, it){
     const hay  = words([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
     const toks = new Set(hay);
@@ -161,7 +164,7 @@
     for (const t of qt) if (tagSet.has(t)) tagHits++;
 
     const cov   = overlaps / Math.max(3, qt.size);
-    const score = cov * 0.7 + tagHits * 0.3;
+    const score = cov * WEIGHT_OVERLAP + tagHits * WEIGHT_TAG;
     return { score, overlaps, tagHits };
   }
 
@@ -200,12 +203,18 @@
     [{title:'Basics',content:basics},{title:'Policies',content:policies},{title:'Amenities',content:amenities}]
       .forEach(x => { const s = scoreDetails(qt, x); cand.push({ type:'doc', item:x, ...s }); });
 
-    cand.sort((a,b)=>b.score-a.score);
+    // Prefer higher score, then more tag hits, then overlaps
+    cand.sort((a,b)=>{
+      if (b.score   !== a.score)   return b.score   - a.score;
+      if (b.tagHits !== a.tagHits) return b.tagHits - a.tagHits;
+      return b.overlaps - a.overlaps;
+    });
+
     const best = cand[0];
     if (!best) return null;
 
-    // Require threshold AND (≥2 overlaps OR a tag match)
-    if (best.score < MATCH_THRESHOLD || (best.overlaps < 2 && best.tagHits < 1)) return null;
+    // Allow single-token queries if there is at least one tag match
+    if (best.score < MATCH_THRESHOLD || (best.overlaps < 1 && best.tagHits < 1)) return null;
 
     if (best.type === 'faq') return best.item.a;
     const t = (best.item.title ? best.item.title + ': ' : '') + best.item.content;
