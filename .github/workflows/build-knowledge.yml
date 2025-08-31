@@ -1,19 +1,30 @@
 name: Build knowledge.json from sitemap
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Build mode"
+        required: false
+        default: "notes-only"   # choose when you click Run workflow
+        type: choice
+        options:
+          - notes-only
+          - crawl
   schedule:
-    - cron: "0 7 * * 1"   # every Monday at 07:00 UTC
+    - cron: "0 7 * * 1"        # every Monday at 07:00 UTC
   push:
     paths:
       - "scripts/build-knowledge.mjs"
 
 permissions:
-  contents: write  # <— give the workflow permission to push back to the repo
+  contents: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SITEMAP_URL: "https://www.destincondogetaways.com/sitemap.xml"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,12 +34,21 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Build knowledge.json
-        env:
-          SITEMAP_URL: "https://www.destincondogetaways.com/sitemap.xml"
-          PAGE_LIMIT: "40"
+      # Decide PAGE_LIMIT based on manual input (default to crawl for scheduled/push runs)
+      - name: Set build mode
         run: |
-          node scripts/build-knowledge.mjs
+          MODE="${{ github.event.inputs.mode }}"
+          if [ -z "$MODE" ]; then MODE="crawl"; fi
+          if [ "$MODE" = "notes-only" ]; then
+            echo "PAGE_LIMIT=0" >> $GITHUB_ENV
+            echo "Mode: notes-only (PAGE_LIMIT=0)"
+          else
+            echo "PAGE_LIMIT=40" >> $GITHUB_ENV
+            echo "Mode: crawl (PAGE_LIMIT=40)"
+          fi
+
+      - name: Build knowledge.json
+        run: node scripts/build-knowledge.mjs
 
       - name: Commit & push if changed
         run: |
