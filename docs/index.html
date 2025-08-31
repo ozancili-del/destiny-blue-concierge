@@ -19,6 +19,9 @@
   .input input { flex:1; padding:11px; border:1px solid var(--border); border-radius:12px; }
   .input button { padding:11px 16px; border:0; border-radius:12px; background:var(--primary); color:#fff; font-weight:600; cursor:pointer; }
   .hint { font-size:12px; color:var(--muted); margin-top:8px; }
+
+  /* NEW: taller chat on phones */
+  @media (max-width: 640px) { .chat { height: 65vh; } }
 </style>
 </head>
 <body>
@@ -26,7 +29,7 @@
   <h1>Destiny Blue — Your AI Concierge</h1>
   <div id="chat" class="chat"></div>
   <div class="input">
-   <input id="q" placeholder="Ask about Wi-Fi, parking, rules, amenities…" autofocus />
+    <input id="q" placeholder="Ask about Wi-Fi, parking, rules, amenities…" autofocus />
     <button id="send">Send</button>
   </div>
   <div class="hint">Answers come from your property notes only. If I’m not sure, I’ll show how to reach the owner.</div>
@@ -82,16 +85,15 @@
   }
   main();
 
- function send(){
-  const text=q.value.trim(); if(!text) return;
-  push('user',text); q.value='';
-  const ans=choose(text);
-  const email=(KB&&KB.contact&&KB.contact.ownerEmail)||null;
-  const fallback = email ? `${NO_MATCH_MESSAGE} Email: ${email}` : NO_MATCH_MESSAGE;
-  push('assistant', ans || fallback);
-  q.focus();                // <-- add this line
-}
-
+  function send(){
+    const text=q.value.trim(); if(!text) return;
+    push('user',text); q.value='';
+    const ans=choose(text);
+    const email=(KB&&KB.contact&&KB.contact.ownerEmail)||null;
+    const fallback = email ? `${NO_MATCH_MESSAGE} Email: ${email}` : NO_MATCH_MESSAGE;
+    push('assistant', ans || fallback);
+    q.focus();
+  }
 
   btn.onclick=send;
   q.onkeydown=e=>e.key==='Enter'&&send();
