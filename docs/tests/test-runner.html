@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Destiny Blue – Test Runner</title>
+<title>Destiny Blue – Automated QA</title>
 <style>
   body { font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:20px; }
   h1 { margin:0 0 12px; }
@@ -36,12 +36,12 @@
 </table>
 
 <script>
-/*** --- keep these in sync with index.html --- ***/
+/*** --- keep these in sync with docs/index.html --- ***/
 const MATCH_THRESHOLD = 0.20;
 const WEIGHT_OVERLAP = 0.55;
 const WEIGHT_TAG     = 0.45;
 
-// Synonyms (removed 'code' from discount)
+// Synonyms (note: 'code' removed from discount to avoid door-code collisions)
 const SYN = {
   rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
   tax:       ['tax','taxes','fee','fees','percentage'],
@@ -97,7 +97,7 @@ const expand = s => {
   return set;
 };
 
-// exact routes first
+// exact routes first (avoid matching "Access to beach?")
 function hardRoute(text, KB){
   const qtxt = (text||'').toLowerCase();
   const HARD = [
@@ -138,7 +138,7 @@ function choose(text, KB){
   if (hr) return {answer:hr, meta:{hard:true,score:1,overlaps:0,tagHits:0,faqQ:'[hard route]'}};
   const qt = expand(text);
 
-  // de-bias generic "beach"
+  // de-bias: if a specific beach item is present, drop generic "beach"
   const SPECIFIC_BEACH_ITEMS = ['towel','chair','umbrella','lounger'];
   if (SPECIFIC_BEACH_ITEMS.some(t => qt.has(t))) qt.delete('beach');
 
@@ -161,10 +161,7 @@ function choose(text, KB){
   return {answer:t.length>800?t.slice(0,780)+'…':t, meta:{...best, faqQ:best.item.title||'[doc]'}};
 }
 
-/*** Test catalog
- * For each intent we generate a handful of phrasings.
- * expected: function(KB) -> FAQ object to compare against.
-***/
+/*** Test catalog (grow this list anytime) ***/
 const SUITE = [
   {label:'Beach chairs', expect:KB=>findFAQ(KB,/provide beach chairs/i),
     terms:['beach chairs','chair','umbrella'],
@@ -262,38 +259,43 @@ function genQueries(item){
 function td(s){ const el=document.createElement('td'); el.innerHTML=s; return el; }
 
 async function run(){
-  const r = await fetch('../docs/knowledge.json?v='+Date.now());
-  const KB = await r.json();
+  try {
+    // IMPORTANT: this path is correct for docs/tests/test-runner.html
+    const r = await fetch('../knowledge.json?v='+Date.now());
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const KB = await r.json();
 
-  const rows = [];
-  let pass=0, fail=0, n=0;
-  for (const spec of SUITE){
-    const expectedFaq = spec.expect ? spec.expect(KB) : null;
-    const queries = genQueries(spec);
+    const rows = [];
+    let pass=0, fail=0, n=0;
 
-    for (const q of queries){
-      n++;
-      const {answer, meta} = choose(q, KB);
-      const expAns = expectedFaq ? expectedFaq.a : null;
+    for (const spec of SUITE){
+      const expectedFaq = spec.expect ? spec.expect(KB) : null;
+      const queries = genQueries(spec);
 
-      const ok = (!!expAns && answer===expAns) || (!expAns && !answer);
-      ok ? pass++ : fail++;
+      for (const q of queries){
+        n++;
+        const {answer, meta} = choose(q, KB);
+        const expAns = expectedFaq ? expectedFaq.a : null;
+        const ok = (!!expAns && answer===expAns) || (!expAns && !answer);
+        ok ? pass++ : fail++;
 
-      const tr = document.createElement('tr');
-      tr.className = ok ? 'pass' : 'fail';
-      tr.appendChild(td(String(n)));
-      tr.appendChild(td('<code>'+escapeHtml(q)+'</code>'));
-      tr.appendChild(td(expectedFaq ? '<b>'+escapeHtml(expectedFaq.q)+'</b>' : '<span class="small">[fallback expected]</span>'));
-      tr.appendChild(td(answer ? '<b>'+escapeHtml(meta.faqQ||'[doc]')+'</b>' : '<i>fallback</i>'));
-      tr.appendChild(td(ok ? '✅' : '❌'));
-      tr.appendChild(td((meta.score??0).toFixed(3)+' / '+(meta.overlaps??0)+' / '+(meta.tagHits??0)));
-      rows.push(tr);
+        const tr = document.createElement('tr');
+        tr.className = ok ? 'pass' : 'fail';
+        tr.appendChild(td(String(n)));
+        tr.appendChild(td('<code>'+escapeHtml(q)+'</code>'));
+        tr.appendChild(td(expectedFaq ? '<b>'+escapeHtml(expectedFaq.q)+'</b>' : '<span class="small">[fallback expected]</span>'));
+        tr.appendChild(td(answer ? '<b>'+escapeHtml(meta.faqQ||'[doc]')+'</b>' : '<i>fallback</i>'));
+        tr.appendChild(td(ok ? '✅' : '❌'));
+        tr.appendChild(td((meta.score??0).toFixed(3)+' / '+(meta.overlaps??0)+' / '+(meta.tagHits??0)));
+        rows.push(tr);
+      }
     }
+    document.querySelector('#summary').textContent =
+      `Total: ${n} | Pass: ${pass} | Fail: ${fail}  —  (${Math.round((pass/n)*100)}% passing)`;
+    const tbody=document.querySelector('#tbl tbody'); rows.forEach(r=>tbody.appendChild(r));
+  } catch (e) {
+    document.querySelector('#summary').textContent = 'Failed to load knowledge.json: ' + e.message;
   }
-
-  document.querySelector('#summary').textContent =
-    `Total: ${n} | Pass: ${pass} | Fail: ${fail}  —  (${Math.round((pass/n)*100)}% passing)`;
-  const tbody=document.querySelector('#tbl tbody'); rows.forEach(r=>tbody.appendChild(r));
 }
 
 function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
