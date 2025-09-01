@@ -77,7 +77,7 @@
     deposit:   ['deposit','hold','security','damage','pre-authorization','incidentals'],
     payment:   ['payment','pay','card','cards','credit','ach','paypal','zelle','amex','discover'],
     modify:    ['modify','extend','change','edit','move','dates'],
-    // removed 'code' to avoid hijacking "door code"
+    // removed 'code' so "door code" won't match discounts
     discount:  ['discount','weekly','monthly','promo','coupon'],
     minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
     towels:    ['towel','towels','linen','linens'],
@@ -101,7 +101,7 @@
     ev:        ['ev','charger','charging','tesla']
   };
 
-  // Stopwords: filler + location + months
+  // Stopwords
   const STOP = new Set([
     'a','an','the','of','in','on','to','for','and','or','is','are','am',
     'it','this','that','do','does','did','my','your','our','we','you','i',
@@ -188,12 +188,12 @@
     if(!KB) return null;
     const qt = expand(text);
 
-    // HARD_ROUTING_RULES — force exact FAQ when query mentions these items
+    // HARD_ROUTING_RULES — precise matches only (avoid matching "Access to beach?")
     const HARD = [
       // access / door code (keyless smart lock)
       [/\b(?:door|access)\s*codes?\b|\bkeyless\b|\bsmart\s*lock\b/i,
-       f => /(access|door|keyless|smart|lock|code)/i.test(f.q) ||
-            (f.tags||[]).some(t => /(access\s*code|door\s*code|keyless|smart\s*lock)/i.test(t))],
+       f => /(door\s*code|access\s*code|keyless|smart\s*lock)/i.test(f.q) ||
+            (f.tags||[]).some(t => /(door\s*code|access\s*code|keyless|smart\s*lock|entry|keys?)/i.test(t))],
 
       // beach chairs (or chairs)
       [/\b(?:beach\s*)?chairs?\b/, f => /chair/i.test(f.q) || (f.tags||[]).some(t => /chair/i.test(t))],
@@ -216,7 +216,7 @@
       }
     }
 
-    // General de-bias: if user mentions a specific beach item, drop generic "beach"
+    // De-bias: if a specific beach item is present, drop generic "beach"
     const SPECIFIC_BEACH_ITEMS = ['towel','chair','umbrella','lounger'];
     if (SPECIFIC_BEACH_ITEMS.some(t => qt.has(t))) {
       qt.delete('beach');
