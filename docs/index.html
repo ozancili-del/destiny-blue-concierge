@@ -77,9 +77,10 @@
     deposit:   ['deposit','hold','security','damage','pre-authorization','incidentals'],
     payment:   ['payment','pay','card','cards','credit','ach','paypal','zelle','amex','discover'],
     modify:    ['modify','extend','change','edit','move','dates'],
-    discount:  ['discount','weekly','monthly','promo','coupon','code'],
+    // removed 'code' to avoid hijacking "door code"
+    discount:  ['discount','weekly','monthly','promo','coupon'],
     minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
-    towels:    ['towel','towels','linen','linens'],   // beach intentionally removed
+    towels:    ['towel','towels','linen','linens'],
 
     beach:        ['beach','shore','ocean','gulf','boardwalk','private','access'],
     view:         ['view','oceanview','gulfview','beachview','seaview'],
@@ -189,6 +190,11 @@
 
     // HARD_ROUTING_RULES — force exact FAQ when query mentions these items
     const HARD = [
+      // access / door code (keyless smart lock)
+      [/\b(?:door|access)\s*codes?\b|\bkeyless\b|\bsmart\s*lock\b/i,
+       f => /(access|door|keyless|smart|lock|code)/i.test(f.q) ||
+            (f.tags||[]).some(t => /(access\s*code|door\s*code|keyless|smart\s*lock)/i.test(t))],
+
       // beach chairs (or chairs)
       [/\b(?:beach\s*)?chairs?\b/, f => /chair/i.test(f.q) || (f.tags||[]).some(t => /chair/i.test(t))],
       // towels
