@@ -16,8 +16,8 @@
 - Q: Can I modify or extend a reservation after booking? (modify / extend / change / dates)
   A: We’re happy to help as long as the calendar shows availability for your new dates.
 
-- Q: Do you offer discounts (weekly, monthly)? (discount / weekly / monthly / promo / coupon / code)
-  A: Yes—weekly and monthly discounts may apply depending on season; feel free to send an inquiry at https://www.destincondogetaways.com/book.
+- Q: Do you offer discounts? (discount / weekly / monthly / promo / coupon)
+  A: We offer weekly and monthly discounts depending on the season; feel free to send an inquiry at https://www.destincondogetaways.com/book.
 
 - Q: Are there any blackout dates or minimum night requirements? (minimum / min / nights / stay / blackout / holiday / requirement)
   A: We have a 3-night minimum; for exceptions or questions, please send an inquiry at https://www.destincondogetaways.com/book.
@@ -44,7 +44,7 @@
   A: Complimentary parking is available; details are in your arrival information.
 
 - Q: Your recommendations for Destin (recommendations / blog / restaurants / activities / things to do)
-  A: See our blog for local tips: https://www.destincondogetaways.com/blog—if you need anything specific, just ask.
+  A: See our blog for local tips: https://www.destincondogetaways.com/blog; if you need anything specific, just ask.
 
 - Q: Check-in and check-out times (check-in / check-out / arrival / departure)
   A: Check-in is 4:00 PM; check-out is 10:00 AM.
@@ -91,8 +91,11 @@
 - Q: In-unit laundry? (washer / dryer / laundry / detergent)
   A: No in-unit laundry; coin/card-operated laundry is available on each floor.
 
-- Q: Hair dryer / iron? (amenities / blow dryer / ironing)
+- Q: Hair dryer / iron? (hair dryer / blow dryer / iron / ironing)
   A: Hair dryer and iron with ironing board are provided.
+
+- Q: Amenities overview? (amenities / included / features / what's included / resort amenities / on-site)
+  A: In-unit: high-speed Wi-Fi, smart TVs, full kitchen, hair dryer & iron, starter supplies; Resort: indoor pool, 2 outdoor pools, 2 hot tubs, fitness center, beach access, EV charging, laundry on each floor.
 
 - Q: Thermostat guidance? (AC / air / temperature / cooling)
   A: Keep doors/windows closed; 72–75°F works best in humid months—systems can freeze if set too low.
@@ -153,9 +156,6 @@
 
 - Q: I lost or forgot my code—what should I do? (lockout / forgot code / can’t get in)
   A: Reply to your arrival email (or contact us) and we’ll promptly reissue or reset your access code.
-
-- Q: Can I share the code with my family or group? (share code / guests / party)
-  A: Sharing within your booked party is fine; please do not post or share publicly.
 
 - Q: Do I need a physical key or keycard? (key / keycard / fob)
   A: No physical keys are needed for the unit—use your access code; amenities use wristbands from the front desk.
