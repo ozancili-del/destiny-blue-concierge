@@ -81,15 +81,14 @@
     },
     {
       "tags": [
-        "weekly, monthly)? (discount",
+        "discount",
         "weekly",
         "monthly",
         "promo",
-        "coupon",
-        "code"
+        "coupon"
       ],
-      "q": "Do you offer discounts",
-      "a": "Yes—weekly and monthly discounts may apply depending on season; feel free to send an inquiry at https://www.destincondogetaways.com/book."
+      "q": "Do you offer discounts?",
+      "a": "We offer weekly and monthly discounts depending on the season; feel free to send an inquiry at https://www.destincondogetaways.com/book."
     },
     {
       "tags": [
@@ -190,7 +189,7 @@
         "things to do"
       ],
       "q": "Your recommendations for Destin",
-      "a": "See our blog for local tips: https://www.destincondogetaways.com/blog—if you need anything specific, just ask."
+      "a": "See our blog for local tips: https://www.destincondogetaways.com/blog; if you need anything specific, just ask."
     },
     {
       "tags": [
@@ -345,12 +344,25 @@
     },
     {
       "tags": [
-        "amenities",
+        "hair dryer",
         "blow dryer",
+        "iron",
         "ironing"
       ],
       "q": "Hair dryer / iron?",
       "a": "Hair dryer and iron with ironing board are provided."
+    },
+    {
+      "tags": [
+        "amenities",
+        "included",
+        "features",
+        "what's included",
+        "resort amenities",
+        "on-site"
+      ],
+      "q": "Amenities overview?",
+      "a": "In-unit: high-speed Wi-Fi, smart TVs, full kitchen, hair dryer & iron, starter supplies; Resort: indoor pool, 2 outdoor pools, 2 hot tubs, fitness center, beach access, EV charging, laundry on each floor."
     },
     {
       "tags": [
@@ -543,15 +555,6 @@
       ],
       "q": "I lost or forgot my code—what should I do?",
       "a": "Reply to your arrival email (or contact us) and we’ll promptly reissue or reset your access code."
-    },
-    {
-      "tags": [
-        "share code",
-        "guests",
-        "party"
-      ],
-      "q": "Can I share the code with my family or group?",
-      "a": "Sharing within your booked party is fine; please do not post or share publicly."
     },
     {
       "tags": [
