@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Destiny Blue – Test Runner</title>
+<style>
+  body { font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; margin:20px; }
+  h1 { margin:0 0 12px; }
+  .meta { color:#6b7280; margin-bottom:12px; }
+  table { border-collapse:collapse; width:100%; }
+  th,td { border:1px solid #e5e7eb; padding:8px; vertical-align:top; }
+  th { background:#f8fafc; text-align:left; }
+  tr.fail { background:#fff7f7; }
+  tr.pass { background:#f7fff9; }
+  code { background:#f3f4f6; padding:1px 4px; border-radius:4px; }
+  .small { font-size:12px; color:#6b7280; }
+</style>
+</head>
+<body>
+<h1>Destiny Blue – Automated QA</h1>
+<div class="meta">Runs the same scoring as your chat to catch routing mistakes (e.g., “door code” vs “discount”).</div>
+<div id="summary" class="meta"></div>
+<table id="tbl">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Query</th>
+      <th>Expected (FAQ)</th>
+      <th>Got (FAQ)</th>
+      <th>OK?</th>
+      <th class="small">Score / overlaps / tags</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+/*** --- keep these in sync with index.html --- ***/
+const MATCH_THRESHOLD = 0.20;
+const WEIGHT_OVERLAP = 0.55;
+const WEIGHT_TAG     = 0.45;
+
+// Synonyms (removed 'code' from discount)
+const SYN = {
+  rates:     ['rate','rates','price','pricing','cost','nightly','seasonal'],
+  tax:       ['tax','taxes','fee','fees','percentage'],
+  insurance: ['insurance','travel','protection','plan','policy','refund'],
+  deposit:   ['deposit','hold','security','damage','pre-authorization','incidentals'],
+  payment:   ['payment','pay','card','cards','credit','ach','paypal','zelle','amex','discover'],
+  modify:    ['modify','extend','change','edit','move','dates'],
+  discount:  ['discount','weekly','monthly','promo','coupon'],
+  minimum:   ['minimum','min','nights','stay','blackout','holiday','requirement'],
+  towels:    ['towel','towels','linen','linens'],
+  beach:        ['beach','shore','ocean','gulf','boardwalk','private','access'],
+  view:         ['view','oceanview','gulfview','beachview','seaview'],
+  beachchairs:  ['beach','chairs','chair','umbrella','lounger','gear'],
+  beachrent:    ['rent','rental','ldv','cabana'],
+  wifi:      ['wifi','wi-fi','wi','fi','internet','network','speed','ssid','password'],
+  occupancy: ['occupancy','guests','people','capacity','max','maximum'],
+  parking:   ['parking','garage','fee','complimentary','pass'],
+  blog:      ['recommendations','blog','restaurants','activities','things','todo','to-do'],
+  checkin:   ['check-in','checkin','arrival','early check-in'],
+  checkout:  ['check-out','checkout','departure'],
+  smoking:   ['smoking','smoke','vape','vaping','cigarette','designated'],
+  pools:     ['pool','pools','indoor','outdoor','heated','kiddie','jacuzzi','hot','tub','spa'],
+  pets:      ['pets','pet','dog','cat','service','animal','esa'],
+  elevator:  ['elevator','lift','accessible'],
+  ev:        ['ev','charger','charging','tesla']
+};
+
+const STOP = new Set([
+  'a','an','the','of','in','on','to','for','and','or','is','are','am',
+  'it','this','that','do','does','did','my','your','our','we','you','i',
+  'lot','lots','destin','florida',
+  'january','february','march','april','may','june','july','august','september','october','november','december'
+]);
+
+function stem(w){
+  w = w.toLowerCase();
+  if (w.endsWith('ies') && w.length > 4) return w.slice(0,-3) + 'y';
+  if (w.endsWith('es')  && w.length > 4) return w.slice(0,-2);
+  if (w.endsWith('s')   && w.length > 3) return w.slice(0,-1);
+  return w;
+}
+const norm  = s => (s||'').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu,' ').replace(/\s+/g,' ').trim();
+const words = s => norm(s).split(' ').filter(w => w && !STOP.has(w)).map(stem);
+
+const expand = s => {
+  const set = new Set(words(s));
+  for (const [k, a] of Object.entries(SYN)) {
+    if (set.has(k) || a.some(x => set.has(x.replace(/\s+/g,'')))) {
+      set.add(k);
+      a.forEach(x => set.add(x.replace(/\s+/g,'')));
+    }
+  }
+  return set;
+};
+
+// exact routes first
+function hardRoute(text, KB){
+  const qtxt = (text||'').toLowerCase();
+  const HARD = [
+    // access / door code (keyless smart lock)
+    [/\b(?:door|access)\s*codes?\b|\bkeyless\b|\bsmart\s*lock\b/i,
+     f => /(door\s*code|access\s*code|keyless|smart\s*lock)/i.test(f.q) ||
+          (f.tags||[]).some(t => /(door\s*code|access\s*code|keyless|smart\s*lock|entry|keys?)/i.test(t))],
+    // chairs / towels / elevator / EV / parking / wifi
+    [/\b(?:beach\s*)?chairs?\b/i, f => /chair/i.test(f.q) || (f.tags||[]).some(t => /chair/i.test(t))],
+    [/\btowels?\b/i,               f => /towel/i.test(f.q) || (f.tags||[]).some(t => /towel/i.test(t))],
+    [/\b(?:elevator|lift)\b/i,     f => /elevator|lift/i.test(f.q)],
+    [/\b(?:ev|charger|charging|tesla)\b/i, f => /ev|charg|tesla/i.test(f.q)],
+    [/\bparking\b/i,               f => /parking/i.test(f.q)],
+    [/\b(?:wi[- ]?fi|wifi|ssid|password)\b/i, f => /wi[- ]?fi|wifi|ssid|password/i.test(f.q+f.a)]
+  ];
+  for (const [re, pred] of HARD) {
+    if (re.test(qtxt)) {
+      const hit = (KB.faqs || []).find(pred);
+      if (hit) return hit.a;
+    }
+  }
+  return null;
+}
+
+function scoreDetails(qt, it){
+  const hay  = words([it.q,it.a,it.title,it.content,...(it.tags||[])].join(' '));
+  const toks = new Set(hay);
+  let overlaps = 0; for (const t of qt) if (toks.has(t)) overlaps++;
+  const tagSet = new Set((it.tags || []).flatMap(x => words(x)));
+  let tagHits  = 0; for (const t of qt) if (tagSet.has(t)) tagHits++;
+  const cov   = overlaps / Math.max(3, qt.size);
+  const score = cov * WEIGHT_OVERLAP + tagHits * WEIGHT_TAG;
+  return { score, overlaps, tagHits };
+}
+
+function choose(text, KB){
+  const hr = hardRoute(text, KB);
+  if (hr) return {answer:hr, meta:{hard:true,score:1,overlaps:0,tagHits:0,faqQ:'[hard route]'}};
+  const qt = expand(text);
+
+  // de-bias generic "beach"
+  const SPECIFIC_BEACH_ITEMS = ['towel','chair','umbrella','lounger'];
+  if (SPECIFIC_BEACH_ITEMS.some(t => qt.has(t))) qt.delete('beach');
+
+  const cand = [];
+  (KB.faqs||[]).forEach(f => { const s = scoreDetails(qt, f); cand.push({ type:'faq', item:f, ...s }); });
+  (KB.docs||[]).forEach(d => { const s = scoreDetails(qt, d); cand.push({ type:'doc', item:d, ...s }); });
+
+  cand.sort((a,b)=>{
+    if (b.score   !== a.score)   return b.score   - a.score;
+    if (b.tagHits !== a.tagHits) return b.tagHits - a.tagHits;
+    return b.overlaps - a.overlaps;
+  });
+  const best = cand[0];
+  if (!best) return {answer:null, meta:{score:0,overlaps:0,tagHits:0,faqQ:null}};
+  if (best.score < MATCH_THRESHOLD || (best.overlaps < 1 && best.tagHits < 1))
+    return {answer:null, meta:best};
+
+  if (best.type === 'faq') return {answer:best.item.a, meta:{...best, faqQ:best.item.q}};
+  const t = (best.item.title ? best.item.title + ': ' : '') + best.item.content;
+  return {answer:t.length>800?t.slice(0,780)+'…':t, meta:{...best, faqQ:best.item.title||'[doc]'}};
+}
+
+/*** Test catalog
+ * For each intent we generate a handful of phrasings.
+ * expected: function(KB) -> FAQ object to compare against.
+***/
+const SUITE = [
+  {label:'Beach chairs', expect:KB=>findFAQ(KB,/provide beach chairs/i),
+    terms:['beach chairs','chair','umbrella'],
+    templates:['{t}','do you provide {t}?','are {t} included?','is {t} complimentary?']},
+
+  {label:'Towels', expect:KB=>findFAQ(KB,/beach towels|bring your own/i),
+    terms:['towels','beach towels','bath towels'],
+    templates:['{t}','do you provide {t}?','should we bring {t}?']},
+
+  {label:'Wi-Fi', expect:KB=>findFAQ(KB,/Wi-?Fi\?/i),
+    terms:['wifi','wi-fi password','ssid','internet'],
+    templates:['{t}','what is the {t}?','do you have {t}?']},
+
+  {label:'Parking', expect:KB=>findFAQ(KB,/Parking\b/i),
+    terms:['parking','parking pass'],
+    templates:['{t}','is {t} free?']},
+
+  {label:'Door/Access code', expect:KB=>findFAQ(KB,/How do we access the condo/i),
+    terms:['door code','access code','keyless','smart lock','entry code'],
+    templates:['{t}','where do we get the {t}?','what is the {t}?']},
+
+  {label:'Elevator', expect:KB=>findFAQ(KB,/elevator/i),
+    terms:['elevator','lift'],
+    templates:['is there an {t}?','{t}?']},
+
+  {label:'EV charging', expect:KB=>findFAQ(KB,/EV charging/i),
+    terms:['ev charger','tesla charging','ev charging'],
+    templates:['do you have {t}?','is there {t}?']},
+
+  {label:'Rates', expect:KB=>findFAQ(KB,/Nightly rates/i),
+    terms:['rates','pricing','nightly rate'],
+    templates:['{t}','what are your {t}?']},
+
+  {label:'Taxes', expect:KB=>findFAQ(KB,/percentage\?/i),
+    terms:['tax','taxes','tax percentage'],
+    templates:['what {t} apply?','{t}?']},
+
+  {label:'Occupancy', expect:KB=>findFAQ(KB,/How many people can stay/i),
+    terms:['occupancy','max guests'],
+    templates:['{t}','what is {t}?']},
+
+  {label:'Pools', expect:KB=>findFAQ(KB,/Pools and hot tubs/i),
+    terms:['pool','pools','hot tub'],
+    templates:['{t}','tell me about {t}']},
+
+  {label:'Pets', expect:KB=>findFAQ(KB,/Are pets allowed/i),
+    terms:['pets','dog','cat'],
+    templates:['are {t} allowed?']},
+
+  {label:'Amenities overview', expect:KB=>findFAQ(KB,/Amenities overview/i),
+    terms:['amenities','what amenities are included','amenities list'],
+    templates:['{t}','what are your {t}?']},
+
+  {label:'Hair dryer', expect:KB=>findFAQ(KB,/Hair dryer \/ iron/i),
+    terms:['hair dryer','blow dryer','iron'],
+    templates:['do you have a {t}?','is there an {t}?']},
+
+  {label:'Coffee maker', expect:KB=>findFAQ(KB,/Coffee maker type/i),
+    terms:['coffee maker','keurig','drip coffee','filters'],
+    templates:['what {t} do you have?','{t}?']},
+
+  {label:'Laundry', expect:KB=>findFAQ(KB,/In-unit laundry/i),
+    terms:['laundry','washer','dryer'],
+    templates:['is there {t}?','do you have {t}?']},
+
+  {label:'Grills', expect:KB=>findFAQ(KB,/Grills policy/i),
+    terms:['grill','bbq','barbecue'],
+    templates:['can we {t}?','are {t}s allowed?']},
+
+  {label:'Wristbands', expect:KB=>findFAQ(KB,/Wristbands \/ access/i),
+    terms:['wristbands','pool bracelets'],
+    templates:['do we need {t}?']},
+
+  {label:'Fitness', expect:KB=>findFAQ(KB,/Fitness center/i),
+    terms:['gym','fitness center'],
+    templates:['is there a {t}?','{t}?']},
+
+  {label:'Fallback (nonsense)', expect:null,
+    terms:['purple banana schedule','do you rent rockets'],
+    templates:['{t}']}
+];
+
+function findFAQ(KB, re){
+  return (KB.faqs||[]).find(f => re.test(f.q || '') );
+}
+
+function genQueries(item){
+  const out = [];
+  item.terms.forEach(t=>{
+    item.templates.forEach(tp=> out.push(tp.replace('{t}', t)));
+  });
+  return out;
+}
+
+function td(s){ const el=document.createElement('td'); el.innerHTML=s; return el; }
+
+async function run(){
+  const r = await fetch('../docs/knowledge.json?v='+Date.now());
+  const KB = await r.json();
+
+  const rows = [];
+  let pass=0, fail=0, n=0;
+  for (const spec of SUITE){
+    const expectedFaq = spec.expect ? spec.expect(KB) : null;
+    const queries = genQueries(spec);
+
+    for (const q of queries){
+      n++;
+      const {answer, meta} = choose(q, KB);
+      const expAns = expectedFaq ? expectedFaq.a : null;
+
+      const ok = (!!expAns && answer===expAns) || (!expAns && !answer);
+      ok ? pass++ : fail++;
+
+      const tr = document.createElement('tr');
+      tr.className = ok ? 'pass' : 'fail';
+      tr.appendChild(td(String(n)));
+      tr.appendChild(td('<code>'+escapeHtml(q)+'</code>'));
+      tr.appendChild(td(expectedFaq ? '<b>'+escapeHtml(expectedFaq.q)+'</b>' : '<span class="small">[fallback expected]</span>'));
+      tr.appendChild(td(answer ? '<b>'+escapeHtml(meta.faqQ||'[doc]')+'</b>' : '<i>fallback</i>'));
+      tr.appendChild(td(ok ? '✅' : '❌'));
+      tr.appendChild(td((meta.score??0).toFixed(3)+' / '+(meta.overlaps??0)+' / '+(meta.tagHits??0)));
+      rows.push(tr);
+    }
+  }
+
+  document.querySelector('#summary').textContent =
+    `Total: ${n} | Pass: ${pass} | Fail: ${fail}  —  (${Math.round((pass/n)*100)}% passing)`;
+  const tbody=document.querySelector('#tbl tbody'); rows.forEach(r=>tbody.appendChild(r));
+}
+
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+run();
+</script>
+</body>
+</html>
