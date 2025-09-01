@@ -18,7 +18,7 @@
         "seasonal"
       ],
       "q": "Nightly rates",
-      "a": "As you can imagine, rates vary by season. Please visit https://www.destincondogetaways.com/book for your dates to see current rates. If you have questions, you can send an inquiry from the same page."
+      "a": "Rates vary by season—please visit https://www.destincondogetaways.com/book for your dates to see current rates; you can also send an inquiry from that page."
     },
     {
       "tags": [
@@ -29,7 +29,7 @@
         "percentage"
       ],
       "q": "What taxes apply and at what percentage?",
-      "a": "The total tax for Destin is 13% consisting of: Sales tax 7% (Florida 6% + Okaloosa County 1% discretionary surtax) and Tourist Development Tax 6%."
+      "a": "Total tax is 13%: 7% sales tax (Florida 6% + Okaloosa County 1%) + 6% Tourist Development Tax."
     },
     {
       "tags": [
@@ -37,11 +37,10 @@
         "travel",
         "protection",
         "policy",
-        "refund",
-        "play travel"
+        "refund"
       ],
       "q": "Is travel insurance available or recommended? Through whom?",
-      "a": "Yes, travel insurance is offered during checkout from Play Travel Protection. We encourage all guests to consider travel insurance."
+      "a": "Yes—travel insurance is offered during checkout from Play Travel Protection; we encourage all guests to consider it."
     },
     {
       "tags": [
@@ -49,14 +48,15 @@
         "hold",
         "security",
         "pre-authorization",
-        "incidentals"
+        "incidentals",
+        "damage"
       ],
       "q": "Do you require a damage deposit or hold? How much and when is it released?",
-      "a": "Yes, there is a $300 damage hold, released 48 hours after checkout."
+      "a": "Yes—a $300 damage hold is released 48 hours after checkout."
     },
     {
       "tags": [
-        "payment",
+        "card, ach, paypal, zelle)? (payment",
         "pay",
         "card",
         "credit",
@@ -66,8 +66,8 @@
         "amex",
         "discover"
       ],
-      "q": "What payment methods do you accept?",
-      "a": "All payments are via credit card, which we believe is secure for both parties."
+      "q": "What payment methods do you accept",
+      "a": "All payments are by credit card, which we believe is secure for both parties."
     },
     {
       "tags": [
@@ -77,19 +77,19 @@
         "dates"
       ],
       "q": "Can I modify or extend a reservation after booking?",
-      "a": "We are happy to help as long as the calendar shows availability for the new dates."
+      "a": "We’re happy to help as long as the calendar shows availability for your new dates."
     },
     {
       "tags": [
-        "discount",
+        "weekly, monthly)? (discount",
         "weekly",
         "monthly",
         "promo",
         "coupon",
         "code"
       ],
-      "q": "Do you offer discounts?",
-      "a": "We offer weekly and monthly discounts depending on the season. Feel free to send an inquiry at https://www.destincondogetaways.com/book."
+      "q": "Do you offer discounts",
+      "a": "Yes—weekly and monthly discounts may apply depending on season; feel free to send an inquiry at https://www.destincondogetaways.com/book."
     },
     {
       "tags": [
@@ -102,7 +102,7 @@
         "requirement"
       ],
       "q": "Are there any blackout dates or minimum night requirements?",
-      "a": "We have a 3-night minimum booking requirement. For any exceptions or questions, please send an inquiry at https://www.destincondogetaways.com/book."
+      "a": "We have a 3-night minimum; for exceptions or questions, please send an inquiry at https://www.destincondogetaways.com/book."
     },
     {
       "tags": [
@@ -115,7 +115,7 @@
         "access"
       ],
       "q": "Access to beach?",
-      "a": "Our condos are right by the beach with no roads to cross. Direct access via the boardwalk."
+      "a": "Our condos are right by the beach with no roads to cross—direct access via the boardwalk."
     },
     {
       "tags": [
@@ -126,17 +126,17 @@
         "seaview"
       ],
       "q": "View from the condos?",
-      "a": "Unrestricted beach and gulf views from our condos."
+      "a": "Unrestricted gulf and beach views from our condos."
     },
     {
       "tags": [
         "beach chairs",
-        "chair",
+        "chairs",
         "umbrella",
         "gear"
       ],
       "q": "Do you provide beach chairs?",
-      "a": "We provide 2 beach chairs and 1 umbrella as complimentary. Per HOA rules, they must be placed behind the Rapid Beach Rentals front rows."
+      "a": "We provide 2 beach chairs and 1 umbrella as a complimentary amenity; per HOA rules they must be placed behind Rapid Beach Rentals’ front rows."
     },
     {
       "tags": [
@@ -146,7 +146,7 @@
         "cabana"
       ],
       "q": "Can I rent beach chairs?",
-      "a": "Yes, especially in high season please reserve in advance: https://ldvbeach.com/destin/pelican-beach-resort/beach-chairs-umbrellas/beach-set (LDV). Owner tip: ask for front row seats."
+      "a": "Yes—especially in high season please reserve in advance: https://ldvbeach.com/destin/pelican-beach-resort/beach-chairs-umbrellas/beach-set (LDV); owner tip: ask for front row seats."
     },
     {
       "tags": [
@@ -154,7 +154,8 @@
         "wi-fi",
         "internet",
         "speed",
-        "ssid"
+        "ssid",
+        "password"
       ],
       "q": "Wi-Fi?",
       "a": "Complimentary high-speed Wi-Fi is provided in our units."
@@ -168,7 +169,7 @@
         "maximum"
       ],
       "q": "How many people can stay?",
-      "a": "Maximum occupancy is 6 per fire code. Bedding: 1 king bed, 2 bunk beds, and 1 sofa bed in the living room."
+      "a": "Maximum occupancy is 6 per fire code; bedding: 1 king bed, 2 hallway bunks (twin), and 1 queen sleeper sofa."
     },
     {
       "tags": [
@@ -178,7 +179,7 @@
         "pass"
       ],
       "q": "Parking",
-      "a": "Complimentary parking is available. Details are in your arrival information."
+      "a": "Complimentary parking is available; details are in your arrival information."
     },
     {
       "tags": [
@@ -189,7 +190,7 @@
         "things to do"
       ],
       "q": "Your recommendations for Destin",
-      "a": "See our blog for local tips: https://www.destincondogetaways.com/blog. If you need anything specific, just ask."
+      "a": "See our blog for local tips: https://www.destincondogetaways.com/blog—if you need anything specific, just ask."
     },
     {
       "tags": [
@@ -198,8 +199,8 @@
         "arrival",
         "departure"
       ],
-      "q": "Check-in and Check-out times",
-      "a": "Check-in is at 4:00 PM. Check-out is at 10:00 AM."
+      "q": "Check-in and check-out times",
+      "a": "Check-in is 4:00 PM; check-out is 10:00 AM."
     },
     {
       "tags": [
@@ -208,19 +209,17 @@
         "arrival"
       ],
       "q": "What if we arrive early?",
-      "a": "You are welcome to enter the resort, register at the front desk, get your parking pass and pool bracelets, and enjoy the beach and pools until the condo is ready."
+      "a": "You’re welcome to enter the resort, register at the front desk, get your parking pass and pool bracelets, and enjoy the beach and pools until the condo is ready."
     },
     {
       "tags": [
-        "smoking",
         "smoke",
         "vape",
-        "vaping",
         "cigarette",
         "designated"
       ],
-      "q": "Smoking policy",
-      "a": "Smoking is strictly prohibited inside units except in designated outdoor areas per HOA rules."
+      "q": "Smoking / vaping policy?",
+      "a": "Smoking and vaping are strictly prohibited inside units—use designated outdoor areas only per HOA rules."
     },
     {
       "tags": [
@@ -245,7 +244,7 @@
         "esa"
       ],
       "q": "Are pets allowed?",
-      "a": "Please send an inquiry. We need to confirm with our HOA."
+      "a": "Please send an inquiry—we need to confirm with our HOA."
     },
     {
       "tags": [
@@ -255,7 +254,7 @@
         "tesla"
       ],
       "q": "Do you have EV charging on-site?",
-      "a": "Yes, EV charging is available on-site."
+      "a": "Yes—EV charging is available on-site."
     },
     {
       "tags": [
@@ -263,7 +262,7 @@
         "requirement",
         "minimum age"
       ],
-      "q": "What is the minimum age to book?",
+      "q": "What’s the minimum age to book?",
       "a": "The primary renter must be 25 years old (or married)."
     },
     {
@@ -273,16 +272,304 @@
         "accessible"
       ],
       "q": "Is there an elevator?",
-      "a": "Yes, there are 5 elevators in the building."
+      "a": "Yes—there are 5 elevators in the building."
     },
     {
       "tags": [
         "towels",
-        "beach towels",
+        "towel",
         "linens"
       ],
-      "q": "Do you provide beach towels?",
-      "a": "Bath towels and linens are provided for use inside the condo. Please bring your own beach towels."
+      "q": "Do you provide beach towels, or do we bring our own?",
+      "a": "Bath towels and linens are provided for use inside the condo; please bring your own beach towels."
+    },
+    {
+      "tags": [
+        "floor",
+        "level",
+        "layout",
+        "plan"
+      ],
+      "q": "What floor & layout?",
+      "a": "We have two units (7th and 10th floors); each is a 1BR with hallway bunks + sleeper sofa—see visuals at https://www.destincondogetaways.com/virtualtour."
+    },
+    {
+      "tags": [
+        "beds",
+        "bed types",
+        "sofa bed",
+        "bunks"
+      ],
+      "q": "Bedding details?",
+      "a": "1 king bed, 2 hallway bunks (twin), and 1 queen sleeper sofa in the living room."
+    },
+    {
+      "tags": [
+        "kitchen",
+        "cookware",
+        "pans",
+        "utensils"
+      ],
+      "q": "Kitchen basics provided?",
+      "a": "Fully equipped kitchen with pots, pans, utensils, dinnerware, and basic tools—bring preferred spices/oils; see https://www.destincondogetaways.com/virtualtour."
+    },
+    {
+      "tags": [
+        "coffee",
+        "keurig",
+        "drip",
+        "filters"
+      ],
+      "q": "Coffee maker type?",
+      "a": "Standard drip coffee maker; starter filters provided—please bring your preferred coffee."
+    },
+    {
+      "tags": [
+        "starter kit",
+        "toiletries",
+        "paper",
+        "detergent"
+      ],
+      "q": "Starter supplies?",
+      "a": "We provide a small starter kit (toilet paper, paper towels, soap, shampoo, dishwasher tabs); please replenish as needed."
+    },
+    {
+      "tags": [
+        "washer",
+        "dryer",
+        "laundry",
+        "detergent"
+      ],
+      "q": "In-unit laundry?",
+      "a": "No in-unit laundry; coin/card-operated laundry is available on each floor."
+    },
+    {
+      "tags": [
+        "amenities",
+        "blow dryer",
+        "ironing"
+      ],
+      "q": "Hair dryer / iron?",
+      "a": "Hair dryer and iron with ironing board are provided."
+    },
+    {
+      "tags": [
+        "ac",
+        "air",
+        "temperature",
+        "cooling"
+      ],
+      "q": "Thermostat guidance?",
+      "a": "Keep doors/windows closed; 72–75°F works best in humid months—systems can freeze if set too low."
+    },
+    {
+      "tags": [
+        "balcony",
+        "railings",
+        "towels",
+        "safety"
+      ],
+      "q": "Balcony rules?",
+      "a": "Do not hang items over railings; supervise children and keep furniture away from the edge."
+    },
+    {
+      "tags": [
+        "grill",
+        "bbq",
+        "barbecue",
+        "balcony"
+      ],
+      "q": "Grills policy?",
+      "a": "Grills are not allowed on balconies per HOA—please use designated community grilling areas."
+    },
+    {
+      "tags": [
+        "bracelets",
+        "pool access",
+        "check-in"
+      ],
+      "q": "Wristbands / access?",
+      "a": "Wristbands are required for pools and amenities (especially in high seasons); pick them up at the front desk during check-in."
+    },
+    {
+      "tags": [
+        "pool times",
+        "heated",
+        "winter"
+      ],
+      "q": "Pool hours & heat?",
+      "a": "Pools are generally open dawn to dusk; the indoor pool is heated—outdoor heat availability varies by season."
+    },
+    {
+      "tags": [
+        "gym",
+        "workout",
+        "hours",
+        "age"
+      ],
+      "q": "Fitness center?",
+      "a": "On-site fitness center available; bring wristbands—hours and age limits per HOA."
+    },
+    {
+      "tags": [
+        "carts",
+        "busy times",
+        "wait"
+      ],
+      "q": "Luggage carts & elevators?",
+      "a": "Carts are near the lobby—please return after use; elevators are busiest at check-in and check-out times."
+    },
+    {
+      "tags": [
+        "mail",
+        "amazon",
+        "front desk"
+      ],
+      "q": "Package delivery?",
+      "a": "The front desk may not accept personal packages—use an Amazon Locker or ship to a nearby pickup point."
+    },
+    {
+      "tags": [
+        "smart tv",
+        "apps",
+        "login",
+        "cable"
+      ],
+      "q": "TV & streaming?",
+      "a": "Smart TVs support streaming apps; use your own logins and remember to sign out at checkout."
+    },
+    {
+      "tags": [
+        "store",
+        "supermarket",
+        "delivery"
+      ],
+      "q": "Groceries nearby?",
+      "a": "Multiple grocery options are nearby; many guests use delivery services to the lobby/entrance."
+    },
+    {
+      "tags": [
+        "uber",
+        "lyft",
+        "pickup spot"
+      ],
+      "q": "Rideshare / taxi pickup?",
+      "a": "Use the front entrance/roundabout for pickup and drop-off."
+    },
+    {
+      "tags": [
+        "storm",
+        "refund",
+        "policy"
+      ],
+      "q": "Hurricane / severe weather?",
+      "a": "We follow local orders and HOA guidance—travel insurance is recommended for weather-related disruptions."
+    },
+    {
+      "tags": [
+        "mid-stay clean",
+        "service"
+      ],
+      "q": "Cleaning during stay?",
+      "a": "Mid-stay cleanings can be arranged for a fee—ask for availability and pricing."
+    },
+    {
+      "tags": [
+        "access code",
+        "door code",
+        "keyless",
+        "smart lock",
+        "entry",
+        "keys"
+      ],
+      "q": "How do we access the condo?",
+      "a": "We use a keyless smart lock; your unique access code is shared 7 days before arrival after your booking is completed."
+    },
+    {
+      "tags": [
+        "active time",
+        "start time",
+        "check-in time",
+        "deactivates",
+        "checkout"
+      ],
+      "q": "When does my code work?",
+      "a": "Your code activates at 4:00 PM on check-in day and deactivates at 10:00 AM on checkout day."
+    },
+    {
+      "tags": [
+        "email",
+        "text",
+        "sms",
+        "arrival instructions",
+        "portal"
+      ],
+      "q": "Where will I receive the code?",
+      "a": "We email your access code and arrival instructions one week before arrival; please check your spam folder."
+    },
+    {
+      "tags": [
+        "last minute",
+        "same day",
+        "urgent",
+        "within 7 days"
+      ],
+      "q": "I booked within a week—when do I get the code?",
+      "a": "For bookings within 7 days, we send the code right after your reservation is confirmed."
+    },
+    {
+      "tags": [
+        "late arrival",
+        "after hours",
+        "midnight"
+      ],
+      "q": "What if I arrive late at night?",
+      "a": "Late arrivals are fine—your access code works any time after 4:00 PM on your check-in day."
+    },
+    {
+      "tags": [
+        "early check-in",
+        "early entry",
+        "early arrival"
+      ],
+      "q": "Can I get early access?",
+      "a": "Codes only activate after 4:00 PM by default; request early check-in and we’ll enable earlier access if available."
+    },
+    {
+      "tags": [
+        "lockout",
+        "forgot code",
+        "can’t get in"
+      ],
+      "q": "I lost or forgot my code—what should I do?",
+      "a": "Reply to your arrival email (or contact us) and we’ll promptly reissue or reset your access code."
+    },
+    {
+      "tags": [
+        "share code",
+        "guests",
+        "party"
+      ],
+      "q": "Can I share the code with my family or group?",
+      "a": "Sharing within your booked party is fine; please do not post or share publicly."
+    },
+    {
+      "tags": [
+        "key",
+        "keycard",
+        "fob"
+      ],
+      "q": "Do I need a physical key or keycard?",
+      "a": "No physical keys are needed for the unit—use your access code; amenities use wristbands from the front desk."
+    },
+    {
+      "tags": [
+        "security",
+        "privacy",
+        "rotate code"
+      ],
+      "q": "Is the code unique and changed between guests?",
+      "a": "Yes—each stay receives a unique code and codes are changed between reservations."
     }
   ],
   "docs": []
